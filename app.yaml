@@ -1,0 +1,13 @@
+---
+apps:
+  - name: fantasy-score-calculator
+    instances: 0
+    script: "dist/main.js"
+    watch: true
+    env: {}
+    env_production:
+      NODE_ENV: production
+    env_test:
+      NODE_ENV: test
+    env_sandbox:
+      NODE_ENV: sandbox

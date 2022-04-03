@@ -1,0 +1,10 @@
+{
+  "host": "localhost",
+  "corsConfigurations": {
+    "origin": true,
+    "methods": "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
+  },
+  "authentication": {
+    "secret": ""
+  }
+}
