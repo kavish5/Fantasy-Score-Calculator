@@ -1,0 +1,81 @@
+{
+	"batting": {
+		"run": 1,
+		"four": 1,
+		"six": 2,
+		"duck": -2,
+		"bonus": {
+			"runs": {
+				"slots": [{
+					"above": 100,
+					"points": 20
+				}, {
+					"above": 50,
+					"points": 10
+				}, {
+					"above": 30,
+					"points": 5
+				}]
+			}
+		}
+	},
+	"bowling": {
+		"wicket": 25,
+		"maiden": 0,
+		"bowled": 8,
+		"lbw": 8,
+		"bonus": {
+			"wickets": {
+				"slots": [{
+					"above": 5,
+					"points": 20
+				}, {
+					"above": 4,
+					"below": 5,
+					"points": 10
+				}, {
+					"above": 3,
+					"below": 4,
+					"points": 5
+				}, {
+					"above": 2,
+					"below": 3,
+					"points": 3
+				}]
+			}
+		}
+	},
+	"fielding": {
+		"catch": 8,
+		"stumping": 12,
+		"runout": {
+			"direct": 12,
+			"indirect": 6
+		},
+		"bonus": {
+			"catches": {
+				"slots": [{
+					"above": 3,
+					"points": 4
+				}]
+			}
+		}
+	},
+	"other": {
+		"availability": {
+			"playing": 4,
+			"notPlaying": 0
+		},
+		"multiplier": {
+			"captain": {
+				"factor": 2
+			},
+			"vicecaptain": {
+				"factor": 1.5
+			},
+			"normal": {
+				"factor": 1
+			}
+		}
+	}
+}
