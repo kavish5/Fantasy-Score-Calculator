@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { PointsCalculatorService } from 'src/points-calculator';
+import { PointsCalculatorService } from '../points-calculator';
 import { GenerateCricketPointsDto } from './dto/calculate-cricket-points.dto';
 import { CricketResponse } from './interface/cricket-response.interface';
 

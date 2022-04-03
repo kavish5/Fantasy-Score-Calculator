@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BattingDetails } from 'src/cricket/dto/calculate-cricket-points.dto';
-import { RoleType } from 'src/cricket/enum/role-type.enum';
+import { BattingDetails } from '../../../cricket/dto/calculate-cricket-points.dto';
+import { RoleType } from '../../../cricket/enum/role-type.enum';
 
 @Injectable()
 export class BattingPointsCalculatorService {

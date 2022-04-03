@@ -3,7 +3,7 @@ import { HttpModule } from '@nestjs/axios';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CricketController } from './cricket.controller';
 import { CricketService } from './cricket.service';
-import { PointsCalculatorModule } from 'src/points-calculator';
+import { PointsCalculatorModule } from '../points-calculator';
 
 @Module({
   imports: [

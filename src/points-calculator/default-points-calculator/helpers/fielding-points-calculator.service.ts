@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { FieldingDetails } from 'src/cricket/dto/calculate-cricket-points.dto';
+import { FieldingDetails } from '../../../cricket/dto/calculate-cricket-points.dto';
 
 @Injectable()
 export class FieldingPointsCalculatorService {

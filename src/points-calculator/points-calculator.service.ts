@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import fs from 'fs';
-import { GenerateCricketPointsDto } from 'src/cricket/dto/calculate-cricket-points.dto';
+import { GenerateCricketPointsDto } from '../cricket/dto/calculate-cricket-points.dto';
 import { DefaultPointsCalculatorService } from './default-points-calculator';
 import { strategyTypeConfigMissingError } from './points-calculator.error';
 
