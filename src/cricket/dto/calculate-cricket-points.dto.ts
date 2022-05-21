@@ -127,7 +127,7 @@ export class GenerateCricketPointsDto {
 
   @IsNotEmpty()
   @IsEnum(StrategyType)
-  strategy: string;
+  strategy: StrategyType;
 
   @IsNotEmpty()
   players: PlayerDetails[];

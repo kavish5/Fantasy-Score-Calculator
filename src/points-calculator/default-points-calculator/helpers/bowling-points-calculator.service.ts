@@ -41,7 +41,8 @@ export class BowlingPointsCalculatorService {
   private calculateBonusPoints(bowling: BowlingDetails, pointsConfigurations: Record<string, any>) {
     let points = 0;
     if (pointsConfigurations.bonus?.economy && pointsConfigurations.bonus?.economy?.minimumBalls <= bowling.balls) {
-      const economy = this.calculateEconomy(bowling);
+      const ballsPerOver = pointsConfigurations.bonus?.economy?.ballsPerOver || 6;
+      const economy = this.calculateEconomy(bowling, ballsPerOver);
       const slot = this.getSlot(pointsConfigurations.bonus?.economy?.slots, economy);
       if (slot) {
         points += slot.points;
@@ -76,9 +77,9 @@ export class BowlingPointsCalculatorService {
     return slot;
   }
 
-  private calculateEconomy(bowling: BowlingDetails) {
+  private calculateEconomy(bowling: BowlingDetails, ballsPerOver: number) {
     const runs = bowling.runs || 0;
     const balls = bowling.balls || 0;
-    return (runs / balls) * 6;
+    return (runs / balls) * ballsPerOver;
   }
 }
