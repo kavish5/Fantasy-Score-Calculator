@@ -23,16 +23,16 @@ export class BowlingPointsCalculatorService {
 
   private calculateDefaultPoints(bowling: BowlingDetails, pointsConfigurations: Record<string, any>): number {
     let points = 0;
-    if (bowling.wickets && bowling.wickets > 0) {
+    if (pointsConfigurations.wicket && bowling.wickets && bowling.wickets > 0) {
       points += bowling.wickets * pointsConfigurations.wicket;
     }
-    if (bowling.maidens && bowling.maidens > 0) {
+    if (pointsConfigurations.maiden && bowling.maidens && bowling.maidens > 0) {
       points += bowling.maidens * pointsConfigurations.maiden;
     }
-    if (bowling.bowled && bowling.bowled > 0) {
+    if (pointsConfigurations.bowled && bowling.bowled && bowling.bowled > 0) {
       points += bowling.bowled * pointsConfigurations.bowled;
     }
-    if (bowling.lbws && bowling.lbws > 0) {
+    if (pointsConfigurations.lbw && bowling.lbws && bowling.lbws > 0) {
       points += bowling.lbws * pointsConfigurations.lbw;
     }
     return points;
