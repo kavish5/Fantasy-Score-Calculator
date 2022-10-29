@@ -26,13 +26,13 @@ export class FieldingPointsCalculatorService {
     if (fielding.catches && fielding.catches > 0) {
       points += fielding.catches * pointsConfigurations.catch;
     }
-    if (fielding.runout?.direct && fielding.runout.direct > 0) {
+    if (pointsConfigurations.runout?.direct && fielding.runout?.direct && fielding.runout.direct > 0) {
       points += fielding.runout.direct * pointsConfigurations.runout.direct;
     }
-    if (fielding.runout?.indirect && fielding.runout.indirect > 0) {
+    if (pointsConfigurations.runout?.indirect && fielding.runout?.indirect && fielding.runout.indirect > 0) {
       points += fielding.runout.indirect * pointsConfigurations.runout.indirect;
     }
-    if (fielding.stumpings && fielding.stumpings > 0) {
+    if (pointsConfigurations.stumping && fielding.stumpings && fielding.stumpings > 0) {
       points += fielding.stumpings * pointsConfigurations.stumping;
     }
     return points;

@@ -50,6 +50,15 @@ export class DefaultPointsCalculatorService {
           )} playing points`,
         );
         const points = battingPoints + bowlingPoints + fieldingPoints + playingPoints;
+        if (points === null) {
+          throw new Error(
+            `${player.name} has accumulated ${JSON.stringify(battingPoints)} batting points, ${JSON.stringify(
+              bowlingPoints,
+            )} bowling points, ${JSON.stringify(fieldingPoints)} fielding points and ${JSON.stringify(
+              playingPoints,
+            )} playing points`,
+          );
+        }
         this.logger.debug(`Total points for ${player.name}: ${JSON.stringify(points)}`);
         const accumulatedPoints = this.rolePointsCalculatorService.calculate(
           points,

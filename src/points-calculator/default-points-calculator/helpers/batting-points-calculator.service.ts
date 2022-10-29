@@ -28,16 +28,16 @@ export class BattingPointsCalculatorService {
     pointsConfigurations: Record<string, any>,
   ): number {
     let points = 0;
-    if (batting.runs && batting.runs > 0) {
+    if (pointsConfigurations.run && batting.runs && batting.runs > 0) {
       points += batting.runs * pointsConfigurations.run;
     }
-    if (batting.fours && batting.fours > 0) {
+    if (pointsConfigurations.four && batting.fours && batting.fours > 0) {
       points += batting.fours * pointsConfigurations.four;
     }
-    if (batting.sixes && batting.sixes > 0) {
+    if (pointsConfigurations.six && batting.sixes && batting.sixes > 0) {
       points += batting.sixes * pointsConfigurations.six;
     }
-    if (batting.isDismissed && batting.runs === 0 && role !== RoleType.BOWL) {
+    if (pointsConfigurations.duck && batting.isDismissed && batting.runs === 0 && role !== RoleType.BOWL) {
       points += pointsConfigurations.duck;
     }
     return points;
