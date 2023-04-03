@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import fs from 'fs';
-import { GenerateCricketPointsDto } from '../cricket/dto/calculate-cricket-points.dto';
+import { GeneratePointsDto } from '../cricket/dto/calculate-points.dto';
 import { DefaultPointsCalculatorService } from './default-points-calculator';
 import { strategyTypeConfigMissingError } from './points-calculator.error';
 
@@ -13,7 +13,7 @@ export class PointsCalculatorService {
     private readonly defaultPointsCalculatorService: DefaultPointsCalculatorService,
   ) {}
 
-  public async defaultCricketPointsCalculation(matchDetails: GenerateCricketPointsDto): Promise<any> {
+  public defaultCricketPointsCalculation(matchDetails: GeneratePointsDto): any {
     this.logger.debug(`Calculating cricket match points for ${JSON.stringify(matchDetails)}`);
     if (matchDetails.players.length === 0) {
       return matchDetails;

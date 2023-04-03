@@ -1,6 +1,7 @@
 import { Body, Controller, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CricketService } from './cricket.service';
-import { GenerateCricketPointsDto } from './dto/calculate-cricket-points.dto';
+import { GeneratePointsDto } from './dto/calculate-points.dto';
+import { AnalyzeMatchDto } from './dto/analyze-match.dto';
 import { CricketResponse } from './interface/cricket-response.interface';
 
 @Controller('cricket')
@@ -9,8 +10,15 @@ export class CricketController {
 
   @Post('points')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async calculatePoints(@Body() data: GenerateCricketPointsDto): Promise<CricketResponse> {
-    const response: CricketResponse = await this.cricketService.calculatePoints(data);
+  calculatePoints(@Body() data: GeneratePointsDto): CricketResponse {
+    const response: CricketResponse = this.cricketService.calculatePoints(data);
+    return response;
+  }
+
+  @Post('analyse/t20')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async analyzeMatch(@Body() data: AnalyzeMatchDto): Promise<CricketResponse> {
+    const response: CricketResponse = await this.cricketService.analyzeMatch(data);
     return response;
   }
 }

@@ -116,7 +116,7 @@ export class PlayerDetails {
   points: number = 0;
 }
 
-export class GenerateCricketPointsDto {
+export class GeneratePointsDto {
   @IsNotEmpty()
   @IsNumber()
   matchId: number;

@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { GenerateCricketPointsDto } from '../../cricket/dto/calculate-cricket-points.dto';
+import { GeneratePointsDto } from '../../cricket/dto/calculate-points.dto';
 import {
   BattingPointsCalculatorService,
   BowlingPointsCalculatorService,
@@ -26,7 +26,7 @@ export class DefaultPointsCalculatorService {
   ) {}
 
   public calculateDefaultPoints(
-    matchDetails: GenerateCricketPointsDto,
+    matchDetails: GeneratePointsDto,
     configurations: Record<string, any>,
   ): Record<string, any> {
     try {
