@@ -21,4 +21,11 @@ export class CricketController {
     const response: CricketResponse = await this.cricketService.analyzeMatch(data);
     return response;
   }
+
+  @Post('process/t20')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async processMatch(@Body() data: AnalyzeMatchDto): Promise<CricketResponse> {
+    const response: CricketResponse = await this.cricketService.processMatch(data);
+    return response;
+  }
 }

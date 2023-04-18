@@ -1,7 +1,15 @@
 {
   "host": "localhost",
   "port": 3000,
-  "mongoDbUrl": "mongodb://localhost:27017/",
+  "databaseConfigurations": {
+    "type": "mysql",
+    "host": "localhost",
+    "port": 3306,
+    "username": "admin",
+    "password": "admin@123",
+    "database": "cricket",
+    "autoLoadEntities": true
+  },
   "authentication": {
     "secret": ""
   },
@@ -9,7 +17,7 @@
     "origin": true,
     "methods": "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
   },
-  "axios_request_retry": {
+  "axiosRequestRetry": {
     "retryDelayTimer": 10000,
     "maxRetryCounter": 5
   }

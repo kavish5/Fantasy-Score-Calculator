@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { PlayerPerformanceService } from '../player-analyser/performance';
+import { PlayerPerformanceService } from '../player-analyser/player-performance';
 import { GeneratePointsDto } from './dto/calculate-points.dto';
 import { CricketResponse } from './interface/cricket-response.interface';
 import { AnalyzeMatchDto } from './dto/analyze-match.dto';
@@ -8,6 +8,8 @@ import { OverByOverService } from '../match-analyser/over-by-over';
 import { PhaseService } from '../match-analyser/phase-wise';
 import { H2hAnalyserService } from '../player-analyser/h2h-analyser';
 import { BaseInfoService } from '../match-analyser/base-info';
+import { PlayerService } from '../player-analyser/player';
+import { VenueService } from '../match-analyser/venue';
 
 @Injectable()
 export class CricketService {
@@ -22,6 +24,8 @@ export class CricketService {
     @Inject(PhaseService) private readonly phaseService: PhaseService,
     @Inject(H2hAnalyserService) private readonly h2hAnalyzerService: H2hAnalyserService,
     @Inject(BaseInfoService) private readonly baseInfoService: BaseInfoService,
+    @Inject(PlayerService) private readonly playerService: PlayerService,
+    @Inject(VenueService) private readonly venueService: VenueService,
   ) {}
 
   public calculatePoints(matchDetails: GeneratePointsDto): CricketResponse {
@@ -45,6 +49,23 @@ export class CricketService {
       return { ...matchDetails, ...fantasyScores, players, h2hDetails };
     } catch (error) {
       this.logger.error(`Error occurred in analyzeMatch function: `, error);
+      throw error;
+    }
+  }
+
+  public async processMatch(matchDetails: AnalyzeMatchDto): Promise<CricketResponse> {
+    try {
+      const [players, venues] = await Promise.all([this.playerService.getPlayers(), this.venueService.getVenues()]);
+      const insights = await this.analyzeMatch(matchDetails);
+      await this.h2hAnalyzerService.processMatchWiseH2h(
+        insights.h2hDetails,
+        players,
+        insights.meta.match_number,
+        insights.info.dates[0],
+      );
+      return { insights, players, venues };
+    } catch (error) {
+      this.logger.error(`Error occurred in processMatch function: `, error);
       throw error;
     }
   }

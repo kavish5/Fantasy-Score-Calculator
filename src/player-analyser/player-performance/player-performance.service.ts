@@ -1,11 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AnalyzeMatchDto } from 'src/cricket/dto/analyze-match.dto';
+import { PlayersPerformance } from './player-performance.entity';
+import { InsertResult, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class PlayerPerformanceService {
   private readonly logger = new Logger(PlayerPerformanceService.name, { timestamp: true });
 
-  constructor() {}
+  constructor(
+    @InjectRepository(PlayersPerformance)
+    private playersPerformanceRepository: Repository<PlayersPerformance>,
+  ) {}
 
   public calculate(matchDetails: AnalyzeMatchDto): any {
     this.logger.debug(`Calculating players performance for match`);
@@ -21,6 +27,21 @@ export class PlayerPerformanceService {
     }
     const players = this.deriveAttributes(Object.values(playerJson));
     return players;
+  }
+
+  public async processMatchWisePlayerPerformance(
+    matchDetails: Record<string, any>[],
+    players: Record<string, any>,
+    matchId: number,
+    matchDate: string,
+  ): Promise<any> {
+    const playersPerformance: PlayersPerformance[] = [];
+    for (const item of matchDetails) {
+      const data = this.getPlayerPerformanceJson(item, players, matchId, matchDate);
+      playersPerformance.push(data);
+    }
+    const response = await this.createPlayersPerformance(playersPerformance);
+    return response;
   }
 
   private generatePlayerJson(players: Record<string, any>, registry: Record<string, any>, toss: Record<string, any>) {
@@ -153,5 +174,19 @@ export class PlayerPerformanceService {
       }
     }
     return playerJson;
+  }
+
+  private getPlayerPerformanceJson(
+    playerDetails: Record<string, any>,
+    players: Record<string, any>,
+    matchId: number,
+    matchDate: string,
+  ) {
+    const data = new PlayersPerformance();
+    return data;
+  }
+
+  private async createPlayersPerformance(playersPerformance: Record<string, any>[]): Promise<InsertResult> {
+    return await this.playersPerformanceRepository.insert(playersPerformance);
   }
 }

@@ -1,11 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InsertResult, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { AnalyzeMatchDto } from '../../cricket/dto/analyze-match.dto';
+import { H2hMatchWise } from './h2h-match-wise.entity';
+import { H2hMatchDto } from './dto/h2h-details.dto';
 
 @Injectable()
 export class H2hAnalyserService {
   private readonly logger = new Logger(H2hAnalyserService.name, { timestamp: true });
 
-  constructor() {}
+  constructor(
+    @InjectRepository(H2hMatchWise)
+    private h2hMatchWiseRepository: Repository<H2hMatchWise>,
+  ) {}
 
   public calculate(matchDetails: AnalyzeMatchDto): any {
     this.logger.debug(`Calculating head to head performance for match`);
@@ -13,6 +20,21 @@ export class H2hAnalyserService {
     let h2hDetails = this.generateH2hPlayerJson(info.players, info.registry);
     h2hDetails = this.getH2hScores(h2hDetails, innings, info.registry);
     return Object.values(h2hDetails);
+  }
+
+  public async processMatchWiseH2h(
+    h2hDetails: H2hMatchDto[],
+    players: Record<string, any>,
+    matchId: number,
+    matchDate: string,
+  ): Promise<any> {
+    const h2h: H2hMatchWise[] = [];
+    for (const item of h2hDetails) {
+      const data = this.getH2hMatchJson(item, players, matchId, matchDate);
+      h2h.push(data);
+    }
+    const response = await this.createH2hMatchWiseRecords(h2h);
+    return response;
   }
 
   private generateH2hPlayerJson(players: Record<string, any>, registry: Record<string, any>) {
@@ -31,7 +53,7 @@ export class H2hAnalyserService {
           bowlerName: secondTeamPlayer,
           runs: 0,
           balls: 0,
-          wickets: 0,
+          wicket: 0,
         };
       }
     }
@@ -46,11 +68,25 @@ export class H2hAnalyserService {
           bowlerName: firstTeamPlayer,
           runs: 0,
           balls: 0,
-          wickets: 0,
+          wicket: 0,
         };
       }
     }
     return playerJson;
+  }
+
+  private getH2hMatchJson(h2hDetails: H2hMatchDto, players: Record<string, any>, matchId: number, matchDate: string) {
+    const data = new H2hMatchWise();
+    data.balls = h2hDetails.balls;
+    data.batter_id = h2hDetails.batterId;
+    data.batting_style = players[h2hDetails.batterId].batting_style;
+    data.bowler_id = h2hDetails.bowlerId;
+    data.bowling_style = players[h2hDetails.bowlerId].bowling_style;
+    data.runs = h2hDetails.runs;
+    data.wicket = h2hDetails.wicket;
+    data.match_id = matchId;
+    data.match_on = new Date(matchDate);
+    return data;
   }
 
   private getH2hScores(h2hDetails: Record<string, any>, innings: Record<string, any>, registry: Record<string, any>) {
@@ -89,7 +125,7 @@ export class H2hAnalyserService {
             wicket.kind !== 'obstructing the field' &&
             wicket.kind !== 'hit wicket'
           ) {
-            h2hDetails[h2hKey].wickets += wickets.length;
+            h2hDetails[h2hKey].wicket += wickets.length;
           }
         }
       }
@@ -105,5 +141,9 @@ export class H2hAnalyserService {
       }
     }
     return h2hDetails;
+  }
+
+  private async createH2hMatchWiseRecords(h2hDetails: H2hMatchWise[]): Promise<InsertResult> {
+    return await this.h2hMatchWiseRepository.insert(h2hDetails);
   }
 }
