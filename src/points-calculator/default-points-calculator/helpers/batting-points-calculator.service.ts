@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BattingDetails } from '../../../cricket/dto/calculate-points.dto';
 import { RoleType } from '../../../cricket/enum/role-type.enum';
+import { BasePointsCalculatorService } from './base-points-calculator.service';
 
 @Injectable()
-export class BattingPointsCalculatorService {
+export class BattingPointsCalculatorService extends BasePointsCalculatorService {
   private readonly logger = new Logger(BattingPointsCalculatorService.name, { timestamp: true });
 
   public calculate(batting: BattingDetails, role: string, pointsConfigurations: Record<string, any>): number {
@@ -65,26 +66,6 @@ export class BattingPointsCalculatorService {
       }
     }
     return points;
-  }
-
-  private getSlot(slots: any, value: number) {
-    const slot = slots.find((item: any) => {
-      let flag = false;
-      if (item.above && item.below) {
-        if (item.above <= value && item.below >= value) {
-          flag = true;
-        }
-      } else {
-        if (item.above && item.above <= value) {
-          flag = true;
-        }
-        if (item.below && item.below >= value) {
-          flag = true;
-        }
-      }
-      return flag;
-    });
-    return slot;
   }
 
   private calculateStrikeRate(batting: BattingDetails) {

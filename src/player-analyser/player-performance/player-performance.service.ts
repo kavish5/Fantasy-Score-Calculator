@@ -17,14 +17,11 @@ export class PlayerPerformanceService {
     this.logger.debug(`Calculating players performance for match`);
     const { innings, info } = matchDetails;
     let playerJson = this.generatePlayerJson(info.players, info.registry, info.toss);
-    let firstInning = innings[0] ? innings[0].overs : [];
-    let secondInning = innings[1] ? innings[1].overs : [];
-    if (firstInning?.length > 0) {
-      playerJson = this.calculateOverScore(firstInning, playerJson);
-    }
-    if (secondInning?.length > 0) {
-      playerJson = this.calculateOverScore(secondInning, playerJson);
-    }
+    innings.forEach((inning) => {
+      if (inning && inning.overs.length > 0) {
+        playerJson = this.calculateOverScore(inning.overs, playerJson);
+      }
+    });
     const players = this.deriveAttributes(Object.values(playerJson));
     return players;
   }
@@ -45,19 +42,25 @@ export class PlayerPerformanceService {
   }
 
   private generatePlayerJson(players: Record<string, any>, registry: Record<string, any>, toss: Record<string, any>) {
-    const playerJson = {};
-    const teams = Object.keys(players);
-    for (const team of teams) {
-      let battingPosition = 1;
-      for (const player of players[team]) {
+    const playerJson: Record<string, any> = {};
+
+    const battingPositions: Record<string, number> = {};
+    const getBattingPosition = (team: string) => battingPositions[team] ?? 1;
+    const updateBattingPosition = (team: string) => (battingPositions[team] = getBattingPosition(team) + 1);
+
+    Object.entries(players).forEach(([team, teamPlayers]) => {
+      teamPlayers.forEach((player: string) => {
+        const isBattingFirst =
+          (toss.decision === 'bat' && team === toss.winner) || (toss.decision === 'field' && team !== toss.winner);
+        const isBowlingFirst =
+          (toss.decision === 'field' && team === toss.winner) || (toss.decision === 'bat' && team !== toss.winner);
+
         playerJson[player] = {
           id: registry.people[player],
           name: player,
-          battingPosition,
-          batFirst:
-            (toss.decision === 'bat' && team === toss.winner) || (toss.decision === 'field' && team !== toss.winner),
-          bowlFirst:
-            (toss.decision === 'field' && team === toss.winner) || (toss.decision === 'bat' && team !== toss.winner),
+          battingPosition: getBattingPosition(team),
+          batFirst: isBattingFirst,
+          bowlFirst: isBowlingFirst,
           isPlaying: true,
           batting: {
             runs: 0,
@@ -83,29 +86,55 @@ export class PlayerPerformanceService {
             stumpings: 0,
           },
         };
-        battingPosition += 1;
-      }
-    }
+
+        updateBattingPosition(team);
+      });
+    });
+
     return playerJson;
   }
 
   private deriveAttributes(players: Record<string, any>[]) {
     for (let player of players) {
-      if (player.batting) {
-        const { runs, balls, fours, sixes, isDismissed } = player.batting;
-        player.batting.hardHittingAbility = balls > 0 ? (fours * 4 + sixes * 6) / balls : -1;
-        player.batting.isFinisher = balls > 0 ? (!isDismissed ? 1 : 0) : -1;
-        player.batting.strikeRate = balls > 0 ? runs / balls : -1;
-        player.batting.runningBetweenWickets =
-          balls > 0 ? runs - (fours * 4 + sixes * 6) / balls - (fours + sixes) : -1;
+      const { batting, bowling } = player;
+      if (batting) {
+        const { runs, balls, fours, sixes, isDismissed } = batting;
+        batting.hardHittingAbility = this.calculateHardHittingAbility(balls, fours, sixes);
+        batting.isFinisher = this.calculateIsFinisher(balls, isDismissed);
+        batting.strikeRate = this.calculateStrikeRate(runs, balls);
+        batting.runningBetweenWickets = this.calculateRunningBetweenWickets(runs, balls, fours, sixes);
       }
-      if (player.bowling) {
-        const { wickets, balls, runs } = player.bowling;
-        player.bowling.perBallAverage = balls > 0 ? runs / balls : -1;
-        player.bowling.wicketTakingAbility = balls > 0 ? (wickets > 0 ? balls / wickets : 0) : -1;
+      if (bowling) {
+        const { wickets, balls, runs } = bowling;
+        bowling.perBallAverage = this.calculatePerBallAverage(balls, runs);
+        bowling.wicketTakingAbility = this.calculateWicketTakingAbility(wickets, balls);
       }
     }
     return players;
+  }
+
+  private calculateHardHittingAbility(balls: number, fours: number, sixes: number): number {
+    return balls > 0 ? (fours * 4 + sixes * 6) / balls : -1;
+  }
+
+  private calculateIsFinisher(balls: number, isDismissed: boolean): number {
+    return balls > 0 ? (!isDismissed ? 1 : 0) : -1;
+  }
+
+  private calculateStrikeRate(runs: number, balls: number): number {
+    return balls > 0 ? runs / balls : -1;
+  }
+
+  private calculateRunningBetweenWickets(runs: number, balls: number, fours: number, sixes: number): number {
+    return balls > 0 ? runs - (fours * 4 + sixes * 6) / balls - (fours + sixes) : -1;
+  }
+
+  private calculatePerBallAverage(balls: number, runs: number): number {
+    return balls > 0 ? runs / balls : -1;
+  }
+
+  private calculateWicketTakingAbility(wickets: number, balls: number): number {
+    return balls > 0 ? (wickets > 0 ? balls / wickets : 0) : -1;
   }
 
   private calculateOverScore(inningsDetail: Record<string, any>[], playerJson: Record<string, any>) {

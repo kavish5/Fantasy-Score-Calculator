@@ -10,7 +10,7 @@ export class CricketController {
 
   @Post('points')
   @UsePipes(new ValidationPipe({ transform: true }))
-  calculatePoints(@Body() data: GeneratePointsDto): CricketResponse {
+  async calculatePoints(@Body() data: GeneratePointsDto): Promise<CricketResponse> {
     const response: CricketResponse = this.cricketService.calculatePoints(data);
     return response;
   }

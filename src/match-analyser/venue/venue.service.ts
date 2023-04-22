@@ -29,14 +29,10 @@ export class VenueService {
         name: venue.venue,
       };
       result[venue.venue] = data;
-      if (_.size(venue.venue_alias_a) > 0) {
-        result[venue.venue_alias_a] = data;
-      }
-      if (_.size(venue.venue_alias_b) > 0) {
-        result[venue.venue_alias_b] = data;
-      }
-      if (_.size(venue.venue_alias_c) > 0) {
-        result[venue.venue_alias_c] = data;
+      for (const alias of [venue.venue_alias_a, venue.venue_alias_b, venue.venue_alias_c]) {
+        if (_.size(alias) > 0) {
+          result[alias] = data;
+        }
       }
     }
     return result;

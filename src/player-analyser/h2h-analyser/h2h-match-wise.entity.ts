@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { H2hMatchDto } from './dto/h2h-details.dto';
 
 // CREATE TABLE `h2h_match_wise` (
 //   `id` int NOT NULL AUTO_INCREMENT,
@@ -77,4 +78,23 @@ export class H2hMatchWise {
 
   @Column({ type: 'int' })
   wicket: number;
+
+  static createInstance(
+    h2hDetails: H2hMatchDto,
+    players: Record<string, any>,
+    matchId: number,
+    matchDate: string,
+  ): H2hMatchWise {
+    const data = new H2hMatchWise();
+    data.balls = h2hDetails.balls;
+    data.batter_id = h2hDetails.batterId;
+    data.batting_style = players[h2hDetails.batterId].batting_style;
+    data.bowler_id = h2hDetails.bowlerId;
+    data.bowling_style = players[h2hDetails.bowlerId].bowling_style;
+    data.runs = h2hDetails.runs;
+    data.wicket = h2hDetails.wicket;
+    data.match_id = matchId;
+    data.match_on = new Date(matchDate);
+    return data;
+  }
 }

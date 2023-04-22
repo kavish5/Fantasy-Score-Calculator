@@ -30,7 +30,7 @@ export class H2hAnalyserService {
   ): Promise<any> {
     const h2h: H2hMatchWise[] = [];
     for (const item of h2hDetails) {
-      const data = this.getH2hMatchJson(item, players, matchId, matchDate);
+      const data = H2hMatchWise.createInstance(item, players, matchId, matchDate);
       h2h.push(data);
     }
     const response = await this.createH2hMatchWiseRecords(h2h);
@@ -38,7 +38,7 @@ export class H2hAnalyserService {
   }
 
   private generateH2hPlayerJson(players: Record<string, any>, registry: Record<string, any>) {
-    const playerJson = {};
+    const playerJson: Record<string, any> = {};
     const teams = Object.keys(players);
     const firstTeam = players[teams[0]];
     const secondTeam = players[teams[1]];
@@ -73,20 +73,6 @@ export class H2hAnalyserService {
       }
     }
     return playerJson;
-  }
-
-  private getH2hMatchJson(h2hDetails: H2hMatchDto, players: Record<string, any>, matchId: number, matchDate: string) {
-    const data = new H2hMatchWise();
-    data.balls = h2hDetails.balls;
-    data.batter_id = h2hDetails.batterId;
-    data.batting_style = players[h2hDetails.batterId].batting_style;
-    data.bowler_id = h2hDetails.bowlerId;
-    data.bowling_style = players[h2hDetails.bowlerId].bowling_style;
-    data.runs = h2hDetails.runs;
-    data.wicket = h2hDetails.wicket;
-    data.match_id = matchId;
-    data.match_on = new Date(matchDate);
-    return data;
   }
 
   private getH2hScores(h2hDetails: Record<string, any>, innings: Record<string, any>, registry: Record<string, any>) {
@@ -134,13 +120,14 @@ export class H2hAnalyserService {
   }
 
   private discardEmptyMatchups(h2hDetails: Record<string, any>) {
+    const nonEmptyMatchups: Record<string, any> = {};
     const keys = Object.keys(h2hDetails);
     for (const key of keys) {
-      if (h2hDetails[key].balls === 0) {
-        delete h2hDetails[key];
+      if (h2hDetails[key].balls !== 0) {
+        nonEmptyMatchups[key] = h2hDetails[key];
       }
     }
-    return h2hDetails;
+    return nonEmptyMatchups;
   }
 
   private async createH2hMatchWiseRecords(h2hDetails: H2hMatchWise[]): Promise<InsertResult> {

@@ -13,9 +13,7 @@ import { VenueService } from '../match-analyser/venue';
 
 @Injectable()
 export class CricketService {
-  private readonly logger = new Logger(CricketService.name, {
-    timestamp: true,
-  });
+  private readonly logger = new Logger(CricketService.name, { timestamp: true });
 
   constructor(
     @Inject(PlayerPerformanceService) private readonly playerPerformanceService: PlayerPerformanceService,
@@ -29,17 +27,13 @@ export class CricketService {
   ) {}
 
   public calculatePoints(matchDetails: GeneratePointsDto): CricketResponse {
-    try {
-      const cricketDocument = this.scoreService.getCalculatedPoints(matchDetails);
-      return cricketDocument;
-    } catch (error) {
-      this.logger.error(`Error occurred in calculatePoints function: `, error);
-      throw error;
-    }
+    return this.tryWrapper(() => {
+      return this.scoreService.getCalculatedPoints(matchDetails);
+    });
   }
 
   public async analyzeMatch(matchDetails: AnalyzeMatchDto): Promise<CricketResponse> {
-    try {
+    return this.tryWrapper(async () => {
       const players = this.playerPerformanceService.calculate(matchDetails);
       const fantasyScores = this.scoreService.calculate(players);
       matchDetails.innings = this.overByOverService.calculate(matchDetails.innings);
@@ -47,14 +41,11 @@ export class CricketService {
       matchDetails = this.baseInfoService.calculate(matchDetails);
       const h2hDetails = this.h2hAnalyzerService.calculate(matchDetails);
       return { ...matchDetails, ...fantasyScores, players, h2hDetails };
-    } catch (error) {
-      this.logger.error(`Error occurred in analyzeMatch function: `, error);
-      throw error;
-    }
+    });
   }
 
   public async processMatch(matchDetails: AnalyzeMatchDto): Promise<CricketResponse> {
-    try {
+    return this.tryWrapper(async () => {
       const [players, venues] = await Promise.all([this.playerService.getPlayers(), this.venueService.getVenues()]);
       const insights = await this.analyzeMatch(matchDetails);
       await this.h2hAnalyzerService.processMatchWiseH2h(
@@ -64,8 +55,14 @@ export class CricketService {
         insights.info.dates[0],
       );
       return { insights, players, venues };
+    });
+  }
+
+  private tryWrapper<T>(fn: () => Promise<T> | T): T | Promise<T> {
+    try {
+      return fn();
     } catch (error) {
-      this.logger.error(`Error occurred in processMatch function: `, error);
+      this.logger.error(`Error occurred in ${fn.name} function: `, error);
       throw error;
     }
   }
