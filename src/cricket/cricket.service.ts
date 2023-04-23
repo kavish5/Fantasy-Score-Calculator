@@ -76,13 +76,15 @@ export class CricketService {
     const files = fs.readdirSync(dir);
 
     files.forEach(async (file) => {
-      const filePath = path.join(dir, file);
-      if (path.extname(file) === '.json') {
-        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-        await this.analyzeMatch(data);
-        response[file.split('.json')[0]] = true;
-      }
-      fs.unlinkSync(filePath);
+      return this.tryWrapper(async () => {
+        const filePath = path.join(dir, file);
+        if (path.extname(file) === '.json') {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          await this.analyzeMatch(data);
+          response[file.split('.json')[0]] = true;
+        }
+        fs.unlinkSync(filePath);
+      });
     });
     return response;
   }
