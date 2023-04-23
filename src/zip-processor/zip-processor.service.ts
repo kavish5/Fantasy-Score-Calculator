@@ -19,7 +19,7 @@ export class ZipProcessorService {
       this.ensureDirectoryExists(outputDir); // Add this line before extracting the zip
       await this.extractZip(zip, outputDir);
     } catch (error) {
-      console.error('Error downloading and extracting zip:', error);
+      this.logger.error(`Error downloading and extracting zip: ${error}`);
     }
   }
 

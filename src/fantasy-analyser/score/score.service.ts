@@ -5,6 +5,7 @@ import { MatchType } from '../../cricket/enum/match-type.enum';
 import { StrategyType } from '../../cricket/enum/strategy-type.enum';
 import { CricketResponse } from '../../cricket/interface/cricket-response.interface';
 import { unsupportedStrategyError } from './score.error';
+import { DreamTeamService } from '../../player-analyser/dream-team';
 
 @Injectable()
 export class ScoreService {
@@ -13,11 +14,13 @@ export class ScoreService {
   constructor(
     @Inject(PointsCalculatorService)
     private readonly pointCalculatorService: PointsCalculatorService,
+    @Inject(DreamTeamService) private readonly dreamTeamService: DreamTeamService,
   ) {}
 
-  public calculate(playerPerformance: PlayerDetails[]): any {
+  public calculate(matchId: number, playerPerformance: PlayerDetails[]): any {
     this.logger.debug(`Calculating scores for ${JSON.stringify(playerPerformance)}`);
-    const fantasyScores = this.getFantasyScores(playerPerformance);
+    let fantasyScores = this.getFantasyScores(matchId, playerPerformance);
+    fantasyScores = this.dreamTeamService.calculate(fantasyScores);
     return { fantasyScores };
   }
 
@@ -30,10 +33,9 @@ export class ScoreService {
     }
   }
 
-  private getFantasyScores(players: PlayerDetails[]) {
+  private getFantasyScores(matchId: number, players: PlayerDetails[]) {
     const fantasyScores = [];
     const strategy = StrategyType.dream11;
-    const matchId = Math.round(Math.random() * 1000000);
     const fantasyData: GeneratePointsDto = {
       matchId,
       players,

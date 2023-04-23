@@ -47,8 +47,9 @@ export class CricketService {
 
   public async analyzeMatch(matchDetails: AnalyzeMatchDto): Promise<CricketResponse> {
     return this.tryWrapper(async () => {
+      const matchId = matchDetails.meta.match_number;
       const players = this.playerPerformanceService.calculate(matchDetails);
-      const fantasyScores = this.scoreService.calculate(players);
+      const fantasyScores = this.scoreService.calculate(matchId, players);
       matchDetails.innings = this.overByOverService.calculate(matchDetails.innings);
       matchDetails = this.phaseService.calculate(matchDetails);
       matchDetails = this.baseInfoService.calculate(matchDetails);
@@ -67,6 +68,12 @@ export class CricketService {
         insights.meta.match_number,
         insights.info.dates[0],
       );
+      await this.playerPerformanceService.processMatchWisePlayerPerformance(
+        insights.info,
+        insights.players,
+        players,
+        insights.meta.match_number,
+      );
       return { insights, players, venues };
     });
   }
@@ -75,12 +82,14 @@ export class CricketService {
     const response: any = {};
     const files = fs.readdirSync(dir);
 
-    files.forEach(async (file) => {
+    files.forEach((file) => {
       return this.tryWrapper(async () => {
         const filePath = path.join(dir, file);
         if (path.extname(file) === '.json') {
           const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-          await this.analyzeMatch(data);
+          const matchNumber = file.split('.json')[0];
+          data.meta.match_number = matchNumber;
+          await this.processMatch(data);
           response[file.split('.json')[0]] = true;
         }
         fs.unlinkSync(filePath);

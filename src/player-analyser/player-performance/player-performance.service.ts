@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AnalyzeMatchDto } from 'src/cricket/dto/analyze-match.dto';
+import { AnalyzeMatchDto, InfoDetails } from '../../cricket/dto/analyze-match.dto';
 import { PlayersPerformance } from './player-performance.entity';
 import { InsertResult, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -27,14 +27,14 @@ export class PlayerPerformanceService {
   }
 
   public async processMatchWisePlayerPerformance(
-    matchDetails: Record<string, any>[],
-    players: Record<string, any>,
+    matchInformation: InfoDetails,
+    matchPlayers: Record<string, any>[],
+    playersList: Record<string, any>,
     matchId: number,
-    matchDate: string,
   ): Promise<any> {
     const playersPerformance: PlayersPerformance[] = [];
-    for (const item of matchDetails) {
-      const data = this.getPlayerPerformanceJson(item, players, matchId, matchDate);
+    for (const player of matchPlayers) {
+      const data = this.getPlayerPerformanceJson(player, matchInformation, playersList, matchId);
       playersPerformance.push(data);
     }
     const response = await this.createPlayersPerformance(playersPerformance);
@@ -197,7 +197,7 @@ export class PlayerPerformanceService {
           } else if (wicket.kind === 'caught and bowled') {
             fielding.catches += 1;
           } else {
-            console.log(wicket);
+            this.logger.debug(`Wicket type: ${wicket}`);
           }
         }
       }
@@ -207,12 +207,49 @@ export class PlayerPerformanceService {
 
   private getPlayerPerformanceJson(
     playerDetails: Record<string, any>,
-    players: Record<string, any>,
+    matchInformation: InfoDetails,
+    playersList: Record<string, any>,
     matchId: number,
-    matchDate: string,
   ) {
     const data = new PlayersPerformance();
+    this.setMatchInformation(data, matchInformation, matchId);
+    this.setPlayerDetails(data, playerDetails);
+    this.setPlayerAttributes(data, playersList);
     return data;
+  }
+
+  private setMatchInformation(data: PlayersPerformance, matchInformation: InfoDetails, matchId: number) {
+    data.city = matchInformation.city;
+    data.venue = matchInformation.venue;
+    data.gender = matchInformation.gender;
+    data.match_type = matchInformation.match_type;
+    data.overs = matchInformation.overs;
+    data.season = matchInformation.season;
+    data.team_type = matchInformation.team_type;
+    data.toss_decision = matchInformation.toss.decision;
+    data.created_at = new Date(matchInformation.dates[0]);
+    data.match_day = data.created_at.getDay();
+    data.match_date = data.created_at.getDate();
+    data.match_month = data.created_at.getMonth();
+    data.first_team = matchInformation.teams[0];
+    data.second_team = matchInformation.teams[1];
+    data.event_name = matchInformation.event?.name;
+    data.event_stage = matchInformation.event?.stage;
+    data.match_id = matchId;
+  }
+
+  private setPlayerDetails(data: PlayersPerformance, playerDetails: Record<string, any>) {
+    data.player_name = playerDetails.name;
+    data.batting_position = playerDetails.battingPosition;
+    data.bat_first = playerDetails.batFirst;
+    data.bowl_first = playerDetails.bowlFirst;
+    data.is_playing = playerDetails.isPlaying;
+    data.player_id = playerDetails.id;
+  }
+
+  private setPlayerAttributes(data: PlayersPerformance, playersList: Record<string, any>) {
+    data.batting_style = playersList[data.player_id].batting_style;
+    data.bowling_style = playersList[data.player_id].bowling_style;
   }
 
   private async createPlayersPerformance(playersPerformance: Record<string, any>[]): Promise<InsertResult> {

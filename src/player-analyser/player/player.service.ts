@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Players } from './player.entity';
 import { groupedForms } from '../../shared/providers/utility.provider';
+import _ from 'lodash';
 
 @Injectable()
 export class PlayerService {
@@ -16,7 +17,7 @@ export class PlayerService {
   public async getPlayers(): Promise<any> {
     const playersList = await this.findAll();
     const players = groupedForms(playersList, 'player_id');
-    this.logger.debug(`List of players: ${players}`);
+    this.logger.debug(`Total players: ${_.size(players)}`);
     return players;
   }
 

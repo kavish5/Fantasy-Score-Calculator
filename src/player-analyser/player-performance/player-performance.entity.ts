@@ -7,6 +7,9 @@ export class PlayersPerformance {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ type: 'int' })
+  match_id: number;
+
   @Column({ type: 'varchar', length: 50 })
   city: string;
 
@@ -127,11 +130,14 @@ export class PlayersPerformance {
   @Column({ type: 'boolean' })
   dream11_is_in_dt: boolean;
 
+  @Column({ type: 'int' })
+  dream11_dt_rank: number;
+
   @Column({ type: 'varchar', length: 50 })
   player_id: string;
 
   @Column({ type: 'varchar', length: 50 })
-  name: string;
+  player_name: string;
 
   @Column({ type: 'int' })
   batting_position: number;

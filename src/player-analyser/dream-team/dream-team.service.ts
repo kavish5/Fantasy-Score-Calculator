@@ -7,13 +7,12 @@ export class DreamTeamService {
 
   constructor() {}
 
-  public calculate(matchDetails: Record<string, any>): any {
+  public calculate(fantasyScores: Record<string, any>[]): any {
     this.logger.debug(`Calculating captain/vice-captain dream team performance for match`);
-    const { fantasyScores } = matchDetails;
     for (const strategy of fantasyScores) {
       strategy.fantasyScore.players = this.rankPlayers(strategy.fantasyScore.players);
     }
-    return { fantasyScores };
+    return fantasyScores;
   }
 
   private rankPlayers(players: Record<string, any>) {
@@ -24,7 +23,7 @@ export class DreamTeamService {
     sortedPlayers.forEach((player, index) => {
       player.isTopPerformer = index <= maxCapCount;
       player.isInDt = index <= maxDtCount;
-      player.rank = index;
+      player.dtRank = index + 1;
     });
 
     return _.orderBy(sortedPlayers, ['bat_first', 'batting_position'], ['desc', 'asc']);
