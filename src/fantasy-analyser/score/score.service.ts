@@ -4,39 +4,38 @@ import { GeneratePointsDto, PlayerDetails } from '../../cricket/dto/calculate-po
 import { MatchType } from '../../cricket/enum/match-type.enum';
 import { StrategyType } from '../../cricket/enum/strategy-type.enum';
 import { CricketResponse } from '../../cricket/interface/cricket-response.interface';
+import { unsupportedStrategyError } from './score.error';
+import { DreamTeamService } from '../../player-analyser/dream-team';
 
 @Injectable()
 export class ScoreService {
   private readonly logger = new Logger(ScoreService.name, { timestamp: true });
 
-  constructor(@Inject(PointsCalculatorService) private readonly pointCalculatorService: PointsCalculatorService) {}
+  constructor(
+    @Inject(PointsCalculatorService)
+    private readonly pointCalculatorService: PointsCalculatorService,
+    @Inject(DreamTeamService) private readonly dreamTeamService: DreamTeamService,
+  ) {}
 
-  public calculate(playerPerformance: PlayerDetails[]): any {
+  public calculate(matchId: number, playerPerformance: PlayerDetails[]): any {
     this.logger.debug(`Calculating scores for ${JSON.stringify(playerPerformance)}`);
-    const fantasyScores = this.getFantasyScores(playerPerformance);
+    let fantasyScores = this.getFantasyScores(matchId, playerPerformance);
+    fantasyScores = this.dreamTeamService.calculate(fantasyScores);
     return { fantasyScores };
   }
 
   public getCalculatedPoints(matchDetails: GeneratePointsDto): CricketResponse {
-    try {
-      switch (matchDetails.strategy) {
-        default:
-          const response = this.pointCalculatorService.defaultCricketPointsCalculation(matchDetails);
-          return response;
-      }
-      return matchDetails;
-    } catch (error) {
-      this.logger.error(
-        `Error occured on calculating cricket match points for ${JSON.stringify(matchDetails)}: ${error}`,
-      );
-      throw error;
+    if (matchDetails.strategy === StrategyType.dream11) {
+      const response = this.pointCalculatorService.calculateCricketPoints(matchDetails);
+      return response;
+    } else {
+      throw unsupportedStrategyError(matchDetails.strategy);
     }
   }
 
-  private getFantasyScores(players: PlayerDetails[]) {
+  private getFantasyScores(matchId: number, players: PlayerDetails[]) {
     const fantasyScores = [];
     const strategy = StrategyType.dream11;
-    const matchId = Math.round(Math.random() * 1000000);
     const fantasyData: GeneratePointsDto = {
       matchId,
       players,

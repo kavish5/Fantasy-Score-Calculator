@@ -11,11 +11,14 @@ export class OverByOverService {
     this.logger.debug(`Calculating over-wise analysis for match`);
     let firstInning: OversDetails[] = innings[0] ? innings[0].overs : [];
     let secondInning: OversDetails[] = innings[1] ? innings[1].overs : [];
+
     if (firstInning.length > 0) {
       firstInning = this.calculateOverScore(firstInning);
+      innings[0].overs = firstInning;
     }
     if (secondInning.length > 0) {
       secondInning = this.calculateOverScore(secondInning);
+      innings[1].overs = secondInning;
     }
     return innings;
   }
@@ -23,14 +26,8 @@ export class OverByOverService {
   private calculateOverScore(inningsDetail: OversDetails[]) {
     for (const over of inningsDetail) {
       const { deliveries } = over;
-      const overTotalScore = deliveries.reduce(
-        (score: any, delivery: Record<string, any>) => score + delivery.runs.total,
-        0,
-      );
-      const extrasScore = deliveries.reduce(
-        (score: any, delivery: Record<string, any>) => score + delivery.runs.extras,
-        0,
-      );
+      const overTotalScore = this.accumulateScores(deliveries, 'total');
+      const extrasScore = this.accumulateScores(deliveries, 'extras');
       const totalBalls = deliveries.length;
       const batterZeroes = deliveries.reduce(
         (score: any, delivery: Record<string, any>) => score + (delivery.runs.batter === 0),
@@ -103,5 +100,9 @@ export class OverByOverService {
       over.wickets = wickets;
     }
     return inningsDetail;
+  }
+
+  private accumulateScores(deliveries: any[], prop: string): number {
+    return deliveries.reduce((score, delivery) => score + delivery.runs[prop], 0);
   }
 }

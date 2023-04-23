@@ -12,6 +12,10 @@ export class MetaDetails {
   @IsNotEmpty()
   @IsNumber()
   revision: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  match_number: number;
 }
 
 export class InfoDetails {

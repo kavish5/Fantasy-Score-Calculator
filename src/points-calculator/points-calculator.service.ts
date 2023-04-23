@@ -1,8 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import fs from 'fs';
 import { GeneratePointsDto } from '../cricket/dto/calculate-points.dto';
 import { DefaultPointsCalculatorService } from './default-points-calculator';
-import { strategyTypeConfigMissingError } from './points-calculator.error';
+import { ConfigReaderService } from '../config-reader';
 
 @Injectable()
 export class PointsCalculatorService {
@@ -11,23 +10,17 @@ export class PointsCalculatorService {
   constructor(
     @Inject(DefaultPointsCalculatorService)
     private readonly defaultPointsCalculatorService: DefaultPointsCalculatorService,
+    @Inject(ConfigReaderService)
+    private readonly configReaderService: ConfigReaderService,
   ) {}
 
-  public defaultCricketPointsCalculation(matchDetails: GeneratePointsDto): any {
+  public calculateCricketPoints(matchDetails: GeneratePointsDto): any {
     this.logger.debug(`Calculating cricket match points for ${JSON.stringify(matchDetails)}`);
     if (matchDetails.players.length === 0) {
       return matchDetails;
     }
-    const configPath = `src/shared/configurations/${matchDetails.strategy}/${matchDetails.type}/configuration.json`;
-    if (!fs.existsSync(configPath)) {
-      throw strategyTypeConfigMissingError(matchDetails.strategy, matchDetails.type);
-    }
-    const configurations = fs.readFileSync(configPath, 'utf8');
-    this.logger.debug(`Configurations: ${JSON.stringify(JSON.parse(configurations))}`);
-    const response = this.defaultPointsCalculatorService.calculateDefaultPoints(
-      matchDetails,
-      JSON.parse(configurations),
-    );
+    const configurations = this.configReaderService.readConfig(matchDetails.strategy, matchDetails.type);
+    const response = this.defaultPointsCalculatorService.calculateDefaultPoints(matchDetails, configurations);
     return response;
   }
 }

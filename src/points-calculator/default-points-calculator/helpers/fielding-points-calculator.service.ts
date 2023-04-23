@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { FieldingDetails } from '../../../cricket/dto/calculate-points.dto';
+import { BasePointsCalculatorService } from './base-points-calculator.service';
 
 @Injectable()
-export class FieldingPointsCalculatorService {
+export class FieldingPointsCalculatorService extends BasePointsCalculatorService {
   private readonly logger = new Logger(FieldingPointsCalculatorService.name, { timestamp: true });
 
   public calculate(fielding: FieldingDetails, pointsConfigurations: Record<string, any>): number {
@@ -47,25 +48,5 @@ export class FieldingPointsCalculatorService {
       }
     }
     return points;
-  }
-
-  private getSlot(slots: any, value: number) {
-    const slot = slots.find((item: any) => {
-      let flag = false;
-      if (item.above && item.below) {
-        if (item.above <= value && item.below >= value) {
-          flag = true;
-        }
-      } else {
-        if (item.above && item.above <= value) {
-          flag = true;
-        }
-        if (item.below && item.below >= value) {
-          flag = true;
-        }
-      }
-      return flag;
-    });
-    return slot;
   }
 }

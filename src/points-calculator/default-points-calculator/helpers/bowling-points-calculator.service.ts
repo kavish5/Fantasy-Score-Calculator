@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BowlingDetails } from '../../../cricket/dto/calculate-points.dto';
+import { BasePointsCalculatorService } from './base-points-calculator.service';
 
 @Injectable()
-export class BowlingPointsCalculatorService {
+export class BowlingPointsCalculatorService extends BasePointsCalculatorService {
   private readonly logger = new Logger(BowlingPointsCalculatorService.name, { timestamp: true });
 
   public calculate(bowling: BowlingDetails, pointsConfigurations: Record<string, any>): number {
@@ -55,26 +56,6 @@ export class BowlingPointsCalculatorService {
       }
     }
     return points;
-  }
-
-  private getSlot(slots: any, value: number) {
-    const slot = slots.find((item: any) => {
-      let flag = false;
-      if (item.above && item.below) {
-        if (item.above <= value && item.below >= value) {
-          flag = true;
-        }
-      } else {
-        if (item.above && item.above <= value) {
-          flag = true;
-        }
-        if (item.below && item.below >= value) {
-          flag = true;
-        }
-      }
-      return flag;
-    });
-    return slot;
   }
 
   private calculateEconomy(bowling: BowlingDetails, ballsPerOver: number) {

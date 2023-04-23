@@ -1,19 +1,21 @@
-import { CacheModule, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
-import { MongooseModule } from '@nestjs/mongoose';
 import { CricketController } from './cricket.controller';
 import { CricketService } from './cricket.service';
-import { PlayerPerformanceModule } from '../player-analyser/performance';
+import { PlayerPerformanceModule } from '../player-analyser/player-performance';
 import { ScoreModule } from '../fantasy-analyser/score';
 import { OverByOverModule } from '../match-analyser/over-by-over';
 import { PhaseModule } from '../match-analyser/phase-wise';
 import { H2hAnalyserModule } from '../player-analyser/h2h-analyser';
 import { DreamTeamModule } from '../player-analyser/dream-team';
 import { BaseInfoModule } from '../match-analyser/base-info';
+import { PlayerModule } from '../player-analyser/player';
+import { VenueModule } from '../match-analyser/venue';
+import { ZipProcessorModule } from '../zip-processor';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([]),
     CacheModule.register({
       ttl: 15000,
       max: 100,
@@ -26,6 +28,9 @@ import { BaseInfoModule } from '../match-analyser/base-info';
     PhaseModule,
     PlayerPerformanceModule,
     ScoreModule,
+    PlayerModule,
+    VenueModule,
+    ZipProcessorModule,
   ],
   controllers: [CricketController],
   providers: [CricketService],

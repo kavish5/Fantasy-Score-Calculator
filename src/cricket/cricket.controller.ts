@@ -10,8 +10,15 @@ export class CricketController {
 
   @Post('points')
   @UsePipes(new ValidationPipe({ transform: true }))
-  calculatePoints(@Body() data: GeneratePointsDto): CricketResponse {
+  async calculatePoints(@Body() data: GeneratePointsDto): Promise<CricketResponse> {
     const response: CricketResponse = this.cricketService.calculatePoints(data);
+    return response;
+  }
+
+  @Post('process/cricsheet')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async processCricsheet(@Body('url') url: string): Promise<CricketResponse> {
+    const response: CricketResponse = this.cricketService.processCricsheet(url);
     return response;
   }
 
@@ -19,6 +26,13 @@ export class CricketController {
   @UsePipes(new ValidationPipe({ transform: true }))
   async analyzeMatch(@Body() data: AnalyzeMatchDto): Promise<CricketResponse> {
     const response: CricketResponse = await this.cricketService.analyzeMatch(data);
+    return response;
+  }
+
+  @Post('process/t20')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async processMatch(@Body() data: AnalyzeMatchDto): Promise<CricketResponse> {
+    const response: CricketResponse = await this.cricketService.processMatch(data);
     return response;
   }
 }
