@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BowlingDetails } from '../../../cricket/dto/calculate-cricket-points.dto';
+import { BowlingDetails } from '../../../cricket/dto/calculate-points.dto';
 
 @Injectable()
 export class BowlingPointsCalculatorService {

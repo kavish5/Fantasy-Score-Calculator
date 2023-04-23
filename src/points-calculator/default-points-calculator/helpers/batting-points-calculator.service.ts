@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BattingDetails } from '../../../cricket/dto/calculate-cricket-points.dto';
+import { BattingDetails } from '../../../cricket/dto/calculate-points.dto';
 import { RoleType } from '../../../cricket/enum/role-type.enum';
 
 @Injectable()
