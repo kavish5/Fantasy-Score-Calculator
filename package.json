@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@nestjs/axios": "^2.0.0",
+    "@nestjs/cache-manager": "^1.0.0",
     "@nestjs/common": "^9.4.0",
     "@nestjs/core": "^9.4.0",
     "@nestjs/mapped-types": "^1.2.2",
@@ -36,6 +37,7 @@
     "compression": "^1.7.4",
     "config": "^3.3.9",
     "helmet": "^6.1.5",
+    "jszip": "^3.10.1",
     "lodash": "^4.17.20",
     "mysql2": "^3.2.3",
     "reflect-metadata": "^0.1.13",

@@ -10,12 +10,16 @@ import { H2hAnalyserService } from '../player-analyser/h2h-analyser';
 import { BaseInfoService } from '../match-analyser/base-info';
 import { PlayerService } from '../player-analyser/player';
 import { VenueService } from '../match-analyser/venue';
+import { ZipProcessorService } from '../zip-processor';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class CricketService {
   private readonly logger = new Logger(CricketService.name, { timestamp: true });
 
   constructor(
+    @Inject(ZipProcessorService) private readonly zipProcessorService: ZipProcessorService,
     @Inject(PlayerPerformanceService) private readonly playerPerformanceService: PlayerPerformanceService,
     @Inject(ScoreService) private readonly scoreService: ScoreService,
     @Inject(OverByOverService) private readonly overByOverService: OverByOverService,
@@ -29,6 +33,15 @@ export class CricketService {
   public calculatePoints(matchDetails: GeneratePointsDto): CricketResponse {
     return this.tryWrapper(() => {
       return this.scoreService.getCalculatedPoints(matchDetails);
+    });
+  }
+
+  public processCricsheet(url: string): CricketResponse {
+    return this.tryWrapper(async () => {
+      const path = '../cricket-files/';
+      await this.zipProcessorService.downloadAndExtractZip(url, path);
+      const response = await this.processJsonFiles(path);
+      return response;
     });
   }
 
@@ -56,6 +69,22 @@ export class CricketService {
       );
       return { insights, players, venues };
     });
+  }
+
+  private async processJsonFiles(dir: string): Promise<any> {
+    const response: any = {};
+    const files = fs.readdirSync(dir);
+
+    files.forEach(async (file) => {
+      const filePath = path.join(dir, file);
+      if (path.extname(file) === '.json') {
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        await this.analyzeMatch(data);
+        response[file.split('.json')[0]] = true;
+      }
+      fs.unlinkSync(filePath);
+    });
+    return response;
   }
 
   private tryWrapper<T>(fn: () => Promise<T> | T): T | Promise<T> {

@@ -14,7 +14,6 @@ export class PhaseService {
     const { innings } = matchDetails;
     const firstInning = innings[0].overs;
     const secondInning = innings[1].overs;
-
     innings[0] = this.calculateInningPhases(firstInning);
     innings[1] = this.calculateInningPhases(secondInning);
 
@@ -31,7 +30,7 @@ export class PhaseService {
     const deathOvers = this.filterPhaseOvers(overs, DO_OVER_T20, Infinity);
 
     return {
-      ...overs,
+      overs,
       powerplay: this.calculatePhaseScore(powerPlayOvers),
       middleovers: this.calculatePhaseScore(middleOvers),
       deathovers: this.calculatePhaseScore(deathOvers),

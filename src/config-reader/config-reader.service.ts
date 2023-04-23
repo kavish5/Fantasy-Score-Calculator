@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import fs from 'fs';
-import { strategyTypeConfigMissingError } from './confid-reader.error';
+import { strategyTypeConfigMissingError } from './config-reader.error';
 
 @Injectable()
 export class ConfigReaderService {

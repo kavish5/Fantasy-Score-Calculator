@@ -1,4 +1,4 @@
-import { CacheModule, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { CricketController } from './cricket.controller';
 import { CricketService } from './cricket.service';
@@ -11,6 +11,8 @@ import { DreamTeamModule } from '../player-analyser/dream-team';
 import { BaseInfoModule } from '../match-analyser/base-info';
 import { PlayerModule } from '../player-analyser/player';
 import { VenueModule } from '../match-analyser/venue';
+import { ZipProcessorModule } from '../zip-processor';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -28,6 +30,7 @@ import { VenueModule } from '../match-analyser/venue';
     ScoreModule,
     PlayerModule,
     VenueModule,
+    ZipProcessorModule,
   ],
   controllers: [CricketController],
   providers: [CricketService],

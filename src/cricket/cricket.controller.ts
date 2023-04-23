@@ -15,6 +15,13 @@ export class CricketController {
     return response;
   }
 
+  @Post('process/cricsheet')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async processCricsheet(@Body('url') url: string): Promise<CricketResponse> {
+    const response: CricketResponse = this.cricketService.processCricsheet(url);
+    return response;
+  }
+
   @Post('analyse/t20')
   @UsePipes(new ValidationPipe({ transform: true }))
   async analyzeMatch(@Body() data: AnalyzeMatchDto): Promise<CricketResponse> {
