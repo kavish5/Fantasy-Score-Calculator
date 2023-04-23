@@ -82,19 +82,33 @@ export class CricketService {
     const response: any = {};
     const files = fs.readdirSync(dir);
 
-    files.forEach((file) => {
-      return this.tryWrapper(async () => {
-        const filePath = path.join(dir, file);
-        if (path.extname(file) === '.json') {
-          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-          const matchNumber = file.split('.json')[0];
-          data.meta.match_number = matchNumber;
-          await this.processMatch(data);
-          response[file.split('.json')[0]] = true;
-        }
-        fs.unlinkSync(filePath);
-      });
-    });
+    // const promises = files.map((file) => {
+    //   return this.tryWrapper(async () => {
+    //     const filePath = path.join(dir, file);
+    //     if (path.extname(file) === '.json') {
+    //       const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    //       const matchNumber = file.split('.json')[0];
+    //       data.meta.match_number = matchNumber;
+    //       await this.processMatch(data);
+    //       response[file.split('.json')[0]] = true;
+    //     }
+    //     fs.unlinkSync(filePath);
+    //   });
+    // });
+    // await Promise.all(promises);
+    // return response;
+
+    for (const file of files) {
+      const filePath = path.join(dir, file);
+      if (path.extname(file) === '.json') {
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const matchNumber = file.split('.json')[0];
+        data.meta.match_number = matchNumber;
+        await this.processMatch(data);
+        response[file.split('.json')[0]] = true;
+      }
+      fs.unlinkSync(filePath);
+    }
     return response;
   }
 
