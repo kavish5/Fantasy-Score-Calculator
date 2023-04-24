@@ -1,8 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Venues } from './venue.entity';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import _ from 'lodash';
+import { Venues } from './venue.entity';
+import { venueUnavailableError } from './venue.error';
 
 @Injectable()
 export class VenueService {
@@ -11,9 +14,21 @@ export class VenueService {
   constructor(
     @InjectRepository(Venues)
     private venuesRepository: Repository<Venues>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  public async getVenues(): Promise<any> {
+  public async getMatchingVenue(matchVenue: string, venues?: Record<string, any>) {
+    if (!venues) {
+      venues = await this.getVenues();
+    }
+
+    if (!venues[matchVenue]) {
+      throw venueUnavailableError(matchVenue);
+    }
+    return venues[matchVenue];
+  }
+
+  private async getVenues(): Promise<any> {
     const venuesList = await this.findAll();
     const venues = this.processVenues(venuesList);
     this.logger.debug(`List of venues: ${JSON.stringify(venues)}`);
@@ -39,7 +54,14 @@ export class VenueService {
   }
 
   private async findAll(): Promise<Venues[]> {
-    // TODO need to cache the response
-    return this.venuesRepository.find();
+    const cacheKey = `all_venues`;
+    let venues = await this.cacheManager.get<Venues[]>(cacheKey);
+
+    if (!venues) {
+      venues = await this.venuesRepository.find();
+      await this.cacheManager.set(cacheKey, venues);
+    }
+
+    return venues;
   }
 }

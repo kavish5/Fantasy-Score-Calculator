@@ -38,9 +38,9 @@ export class CricketService {
 
   public processCricsheet(url: string): CricketResponse {
     return this.tryWrapper(async () => {
-      const path = '../cricket-files/';
-      await this.zipProcessorService.downloadAndExtractZip(url, path);
-      const response = await this.processJsonFiles(path);
+      const filePath = '../cricket-files/';
+      await this.zipProcessorService.downloadAndExtractZip(url, filePath);
+      const response = await this.processJsonFiles(filePath);
       return response;
     });
   }
@@ -60,44 +60,31 @@ export class CricketService {
 
   public async processMatch(matchDetails: AnalyzeMatchDto): Promise<CricketResponse> {
     return this.tryWrapper(async () => {
-      const [players, venues] = await Promise.all([this.playerService.getPlayers(), this.venueService.getVenues()]);
+      const [players] = await Promise.all([this.playerService.getPlayers()]);
+      const matchVenue = matchDetails.info.venue;
+      const venueDetails = await this.venueService.getMatchingVenue(matchVenue);
+      matchDetails.info.venue = venueDetails.name;
+      matchDetails.info.city = venueDetails.city;
+
       const insights = await this.analyzeMatch(matchDetails);
-      await this.h2hAnalyzerService.processMatchWiseH2h(
-        insights.h2hDetails,
-        players,
-        insights.meta.match_number,
-        insights.info.dates[0],
-      );
+      const matchNumber = insights.meta.match_number;
+      const matchDate = insights.info.dates[0];
+
+      await this.h2hAnalyzerService.processMatchWiseH2h(insights.h2hDetails, players, matchNumber, matchDate);
       await this.playerPerformanceService.processMatchWisePlayerPerformance(
         insights.info,
         insights.players,
         players,
-        insights.meta.match_number,
+        matchNumber,
       );
-      return { insights, players, venues };
+
+      return { insights, players, venueDetails };
     });
   }
 
   private async processJsonFiles(dir: string): Promise<any> {
     const response: any = {};
     const files = fs.readdirSync(dir);
-
-    // const promises = files.map((file) => {
-    //   return this.tryWrapper(async () => {
-    //     const filePath = path.join(dir, file);
-    //     if (path.extname(file) === '.json') {
-    //       const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    //       const matchNumber = file.split('.json')[0];
-    //       data.meta.match_number = matchNumber;
-    //       await this.processMatch(data);
-    //       response[file.split('.json')[0]] = true;
-    //     }
-    //     fs.unlinkSync(filePath);
-    //   });
-    // });
-    // await Promise.all(promises);
-    // return response;
-
     for (const file of files) {
       const filePath = path.join(dir, file);
       if (path.extname(file) === '.json') {
