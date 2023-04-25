@@ -7,7 +7,7 @@ import { ScoreService } from '../fantasy-analyser/score';
 import { OverByOverService } from '../match-analyser/over-by-over';
 import { PhaseService } from '../match-analyser/phase-wise';
 import { H2hAnalyserService } from '../player-analyser/h2h-analyser';
-import { BaseInfoService } from '../match-analyser/base-info';
+import { MatchInformationService } from '../match-analyser/match-information';
 import { PlayerService } from '../player-analyser/player';
 import { VenueService } from '../match-analyser/venue';
 import { ZipProcessorService } from '../zip-processor';
@@ -25,7 +25,7 @@ export class CricketService {
     @Inject(OverByOverService) private readonly overByOverService: OverByOverService,
     @Inject(PhaseService) private readonly phaseService: PhaseService,
     @Inject(H2hAnalyserService) private readonly h2hAnalyzerService: H2hAnalyserService,
-    @Inject(BaseInfoService) private readonly baseInfoService: BaseInfoService,
+    @Inject(MatchInformationService) private readonly matchInformationService: MatchInformationService,
     @Inject(PlayerService) private readonly playerService: PlayerService,
     @Inject(VenueService) private readonly venueService: VenueService,
   ) {}
@@ -52,7 +52,7 @@ export class CricketService {
       const fantasyScores = this.scoreService.calculate(matchId, players);
       matchDetails.innings = this.overByOverService.calculate(matchDetails.innings);
       matchDetails = this.phaseService.calculate(matchDetails);
-      matchDetails = this.baseInfoService.calculate(matchDetails);
+      matchDetails = this.matchInformationService.calculate(matchDetails);
       const h2hDetails = this.h2hAnalyzerService.calculate(matchDetails);
       return { ...matchDetails, ...fantasyScores, players, h2hDetails };
     });
@@ -60,6 +60,7 @@ export class CricketService {
 
   public async processMatch(matchDetails: AnalyzeMatchDto): Promise<CricketResponse> {
     return this.tryWrapper(async () => {
+      // TODO: check if match is processed, if not add data to table, if yes return
       const [players] = await Promise.all([this.playerService.getPlayers()]);
       const matchVenue = matchDetails.info.venue;
       const venueDetails = await this.venueService.getMatchingVenue(matchVenue);
@@ -77,6 +78,8 @@ export class CricketService {
         players,
         matchNumber,
       );
+      // TODO: update phase wise score in table
+      // TODO: mark it processed
 
       return { insights, players, venueDetails };
     });

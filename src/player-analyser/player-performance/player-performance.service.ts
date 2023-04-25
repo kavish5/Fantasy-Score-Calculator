@@ -34,6 +34,12 @@ export class PlayerPerformanceService {
   ): Promise<any> {
     const playersPerformance: PlayersPerformance[] = [];
     for (const player of matchPlayers) {
+      if (!playersList[player.player_id]) {
+        playersList[player.player_id] = {
+          player_name: player.name,
+        };
+        // TODO: Insert player into database
+      }
       const data = this.getPlayerPerformanceJson(player, matchInformation, playersList, matchId);
       playersPerformance.push(data);
     }

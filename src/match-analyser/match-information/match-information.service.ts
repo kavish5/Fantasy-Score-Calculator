@@ -2,18 +2,18 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AnalyzeMatchDto, InfoDetails } from '../../cricket/dto/analyze-match.dto';
 
 @Injectable()
-export class BaseInfoService {
-  private readonly logger = new Logger(BaseInfoService.name, { timestamp: true });
+export class MatchInformationService {
+  private readonly logger = new Logger(MatchInformationService.name, { timestamp: true });
 
   constructor() {}
 
   public calculate(matchDetails: AnalyzeMatchDto): any {
-    this.logger.debug(`Generating base info for match`);
-    matchDetails.info = this.deriveBaseInfo(matchDetails.info);
+    this.logger.debug(`Generating base information for match`);
+    matchDetails.info = this.deriveMatchInformation(matchDetails.info);
     return matchDetails;
   }
 
-  private deriveBaseInfo(info: InfoDetails) {
+  private deriveMatchInformation(info: InfoDetails) {
     const matchDate = new Date(info.dates[0]);
     const details: any = {
       event_name: info.event?.name,
