@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PlayerPerformanceService } from '../player-analyser/player-performance';
 import { GeneratePointsDto } from './dto/calculate-points.dto';
 import { CricketResponse } from './interface/cricket-response.interface';
