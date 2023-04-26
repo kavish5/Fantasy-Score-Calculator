@@ -11,6 +11,7 @@ import { MatchInformationService } from '../match-analyser/match-information';
 import { PlayerService } from '../player-analyser/player';
 import { VenueService } from '../match-analyser/venue';
 import { ZipProcessorService } from '../zip-processor';
+import { MatchInformation } from '../match-analyser/match-information/match-information.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -19,15 +20,15 @@ export class CricketService {
   private readonly logger = new Logger(CricketService.name, { timestamp: true });
 
   constructor(
-    @Inject(ZipProcessorService) private readonly zipProcessorService: ZipProcessorService,
-    @Inject(PlayerPerformanceService) private readonly playerPerformanceService: PlayerPerformanceService,
-    @Inject(ScoreService) private readonly scoreService: ScoreService,
-    @Inject(OverByOverService) private readonly overByOverService: OverByOverService,
-    @Inject(PhaseService) private readonly phaseService: PhaseService,
-    @Inject(H2hAnalyserService) private readonly h2hAnalyzerService: H2hAnalyserService,
-    @Inject(MatchInformationService) private readonly matchInformationService: MatchInformationService,
-    @Inject(PlayerService) private readonly playerService: PlayerService,
-    @Inject(VenueService) private readonly venueService: VenueService,
+    private readonly zipProcessorService: ZipProcessorService,
+    private readonly playerPerformanceService: PlayerPerformanceService,
+    private readonly scoreService: ScoreService,
+    private readonly overByOverService: OverByOverService,
+    private readonly phaseService: PhaseService,
+    private readonly h2hAnalyzerService: H2hAnalyserService,
+    private readonly matchInformationService: MatchInformationService,
+    private readonly playerService: PlayerService,
+    private readonly venueService: VenueService,
   ) {}
 
   public calculatePoints(matchDetails: GeneratePointsDto): CricketResponse {
@@ -47,42 +48,58 @@ export class CricketService {
 
   public async analyzeMatch(matchDetails: AnalyzeMatchDto): Promise<CricketResponse> {
     return this.tryWrapper(async () => {
-      const matchId = matchDetails.meta.match_number;
-      const players = this.playerPerformanceService.calculate(matchDetails);
-      const fantasyScores = this.scoreService.calculate(matchId, players);
-      matchDetails.innings = this.overByOverService.calculate(matchDetails.innings);
-      matchDetails = this.phaseService.calculate(matchDetails);
-      matchDetails = this.matchInformationService.calculate(matchDetails);
-      const h2hDetails = this.h2hAnalyzerService.calculate(matchDetails);
-      return { ...matchDetails, ...fantasyScores, players, h2hDetails };
+      return this.createCricketResponse(matchDetails);
     });
   }
 
   public async processMatch(matchDetails: AnalyzeMatchDto): Promise<CricketResponse> {
     return this.tryWrapper(async () => {
-      // TODO: check if match is processed, if not add data to table, if yes return
-      const [players] = await Promise.all([this.playerService.getPlayers()]);
-      const matchVenue = matchDetails.info.venue;
-      const venueDetails = await this.venueService.getMatchingVenue(matchVenue);
-      matchDetails.info.venue = venueDetails.name;
-      matchDetails.info.city = venueDetails.city;
-
-      const insights = await this.analyzeMatch(matchDetails);
-      const matchNumber = insights.meta.match_number;
-      const matchDate = insights.info.dates[0];
-
-      await this.h2hAnalyzerService.processMatchWiseH2h(insights.h2hDetails, players, matchNumber, matchDate);
-      await this.playerPerformanceService.processMatchWisePlayerPerformance(
-        insights.info,
-        insights.players,
-        players,
-        matchNumber,
-      );
-      // TODO: update phase wise score in table
-      // TODO: mark it processed
-
-      return { insights, players, venueDetails };
+      const insights = await this.createCricketResponse(matchDetails);
+      await this.processCricketResponse(insights);
+      return insights;
     });
+  }
+
+  private async createCricketResponse(matchDetails: AnalyzeMatchDto): Promise<CricketResponse> {
+    const matchId = matchDetails.meta.match_number;
+    const players = this.playerPerformanceService.calculate(matchDetails);
+    const fantasyScores = this.scoreService.calculate(matchId, players);
+    matchDetails.innings = this.overByOverService.calculate(matchDetails.innings);
+    matchDetails = this.phaseService.calculate(matchDetails);
+    matchDetails = this.matchInformationService.calculate(matchDetails);
+    const h2hDetails = this.h2hAnalyzerService.calculate(matchDetails);
+    return { ...matchDetails, ...fantasyScores, players, h2hDetails };
+  }
+
+  private async processCricketResponse(insights: CricketResponse) {
+    const matchNumber = insights.meta.match_number;
+    const matchDate = insights.info.dates[0];
+    const players = await this.playerService.getPlayers();
+    const matchVenue = insights.info.venue;
+    const venueDetails = await this.venueService.getMatchingVenue(matchVenue);
+    insights.info.venue = venueDetails.name;
+    insights.info.city = venueDetails.city;
+
+    const matchInformation = await this.storeMatchInformation(insights);
+    await this.h2hAnalyzerService.processMatchWiseH2h(insights.h2hDetails, players, matchNumber, matchDate);
+    await this.playerPerformanceService.processMatchWisePlayerPerformance(
+      insights.info,
+      insights.players,
+      players,
+      matchNumber,
+    );
+    await this.updateMatchInformation(matchInformation);
+  }
+
+  private async storeMatchInformation(insights: CricketResponse) {
+    const matchInformation: MatchInformation = this.matchInformationService.createMatchInformation(insights);
+    return this.matchInformationService.storeMatch(matchInformation);
+  }
+
+  private async updateMatchInformation(matchInformation: MatchInformation) {
+    matchInformation.is_processed = true;
+    const response = await this.matchInformationService.updateMatchInformation(matchInformation);
+    return response;
   }
 
   private async processJsonFiles(dir: string): Promise<any> {

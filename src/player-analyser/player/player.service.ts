@@ -24,6 +24,27 @@ export class PlayerService {
     return players;
   }
 
+  public async addPlayer(data: Record<string, any>): Promise<Players> {
+    const player = await this.insertPlayer(data);
+    await this.updateCache(player);
+    return player;
+  }
+
+  private async insertPlayer(data: Record<string, any>): Promise<Players> {
+    const player = this.playersRepository.create(data);
+    await this.playersRepository.save(player);
+    return player;
+  }
+
+  private async updateCache(newPlayer: Players): Promise<void> {
+    const cacheKey = `all_players`;
+    const players = await this.cacheManager.get<Players[]>(cacheKey);
+    if (players) {
+      players.push(newPlayer);
+      await this.cacheManager.set(cacheKey, players);
+    }
+  }
+
   private async findAll(): Promise<Players[]> {
     const cacheKey = `all_players`;
     let players = await this.cacheManager.get<Players[]>(cacheKey);

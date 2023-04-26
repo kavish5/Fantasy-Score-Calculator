@@ -5,7 +5,7 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 })
 export class MatchInformation {
   @PrimaryGeneratedColumn()
-  id: number;
+  id?: number;
 
   @Column({ type: 'int' })
   match_id: number;
@@ -74,6 +74,12 @@ export class MatchInformation {
   first_deathovers_wickets: number;
 
   @Column({ type: 'int' })
+  first_total_runs: number;
+
+  @Column({ type: 'int' })
+  first_total_wickets: number;
+
+  @Column({ type: 'int' })
   second_powerplay_runs: number;
 
   @Column({ type: 'int' })
@@ -90,4 +96,10 @@ export class MatchInformation {
 
   @Column({ type: 'int' })
   second_deathovers_wickets: number;
+
+  @Column({ type: 'int' })
+  second_total_runs: number;
+
+  @Column({ type: 'int' })
+  second_total_wickets: number;
 }

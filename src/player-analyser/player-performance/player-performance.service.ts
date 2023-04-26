@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AnalyzeMatchDto, InfoDetails } from '../../cricket/dto/analyze-match.dto';
 import { PlayersPerformance } from './player-performance.entity';
 import { InsertResult, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PlayerService } from '../player/player.service';
 
 @Injectable()
 export class PlayerPerformanceService {
@@ -11,6 +12,7 @@ export class PlayerPerformanceService {
   constructor(
     @InjectRepository(PlayersPerformance)
     private playersPerformanceRepository: Repository<PlayersPerformance>,
+    @Inject(PlayerService) private readonly playerService: PlayerService,
   ) {}
 
   public calculate(matchDetails: AnalyzeMatchDto): any {
@@ -37,8 +39,10 @@ export class PlayerPerformanceService {
       if (!playersList[player.player_id]) {
         playersList[player.player_id] = {
           player_name: player.name,
+          player_id: player.player_id,
         };
-        // TODO: Insert player into database
+        this.logger.debug(`Player ${player.name} with id ${player.player_id} is not available`);
+        await this.playerService.addPlayer(playersList[player.player_id]);
       }
       const data = this.getPlayerPerformanceJson(player, matchInformation, playersList, matchId);
       playersPerformance.push(data);
