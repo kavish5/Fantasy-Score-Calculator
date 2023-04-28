@@ -1,5 +1,14 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
+// CREATE TABLE players (
+//   id SERIAL PRIMARY KEY,
+//   gender VARCHAR(10) CHECK (gender IN ('male', 'female')),
+//   player_name VARCHAR(50),
+//   player_id VARCHAR(50),
+//   batting_style VARCHAR(50),
+//   bowling_style VARCHAR(50)
+// );
+
 @Entity({
   name: 'players',
 })

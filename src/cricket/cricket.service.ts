@@ -107,12 +107,18 @@ export class CricketService {
     const files = fs.readdirSync(dir);
     for (const file of files) {
       const filePath = path.join(dir, file);
-      if (path.extname(file) === '.json') {
-        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-        const matchNumber = file.split('.json')[0];
-        data.meta.match_number = matchNumber;
-        await this.processMatch(data);
-        response[file.split('.json')[0]] = true;
+      try {
+        if (path.extname(file) === '.json') {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const matchNumber = file.split('.json')[0];
+          const numericMatchNumber = matchNumber.replace(/\D/g, ''); // Remove all non-numeric characters
+          data.meta.match_number = numericMatchNumber;
+          await this.processMatch(data);
+          response[file.split('.json')[0]] = true;
+        }
+      } catch (error) {
+        this.logger.error(`Error occured in processing ${filePath} ${JSON.stringify(error)} ${error}`);
+        response[file.split('.json')[0]] = false;
       }
       fs.unlinkSync(filePath);
     }

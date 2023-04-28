@@ -1,5 +1,14 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
+// CREATE TABLE venues (
+//   id SERIAL PRIMARY KEY,
+//   city VARCHAR(100),
+//   venue VARCHAR(200),
+//   venue_alias_a VARCHAR(200),
+//   venue_alias_b VARCHAR(200),
+//   venue_alias_c VARCHAR(200)
+// );
+
 @Entity({
   name: 'venues',
 })

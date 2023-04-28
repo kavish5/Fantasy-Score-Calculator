@@ -41,8 +41,10 @@ export class PlayerPerformanceService {
           player_name: player.name,
           player_id: player.id,
         };
-        this.logger.warn(`Player ${player.name} with id ${player.id} is not available`);
-        await this.playerService.addPlayer(playersList[player.player_id]);
+        this.logger.warn(
+          `Player ${player.name} with id ${player.id} is not available: ${JSON.stringify(playersList[player.id])}`,
+        );
+        await this.playerService.addPlayer(playersList[player.id]);
       }
       const data = this.getPlayerPerformanceJson(player, matchInformation, playersList, matchId);
       playersPerformance.push(data);
@@ -285,8 +287,8 @@ export class PlayerPerformanceService {
   }
 
   private setPlayerAttributes(data: PlayersPerformance, playersList: Record<string, any>) {
-    data.batting_style = playersList[data.player_id].batting_style;
-    data.bowling_style = playersList[data.player_id].bowling_style;
+    data.batting_style = playersList[data.player_id]?.batting_style;
+    data.bowling_style = playersList[data.player_id]?.bowling_style;
   }
 
   private async createPlayersPerformance(playersPerformance: Record<string, any>[]): Promise<InsertResult> {
