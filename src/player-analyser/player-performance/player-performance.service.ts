@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AnalyzeMatchDto, InfoDetails } from '../../cricket/dto/analyze-match.dto';
 import { PlayersPerformance } from './player-performance.entity';
 import { InsertResult, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PlayerService } from '../player/player.service';
 
 @Injectable()
 export class PlayerPerformanceService {
@@ -11,6 +12,7 @@ export class PlayerPerformanceService {
   constructor(
     @InjectRepository(PlayersPerformance)
     private playersPerformanceRepository: Repository<PlayersPerformance>,
+    @Inject(PlayerService) private readonly playerService: PlayerService,
   ) {}
 
   public calculate(matchDetails: AnalyzeMatchDto): any {
@@ -34,6 +36,16 @@ export class PlayerPerformanceService {
   ): Promise<any> {
     const playersPerformance: PlayersPerformance[] = [];
     for (const player of matchPlayers) {
+      if (!playersList[player.id]) {
+        playersList[player.id] = {
+          player_name: player.name,
+          player_id: player.id,
+        };
+        this.logger.warn(
+          `Player ${player.name} with id ${player.id} is not available: ${JSON.stringify(playersList[player.id])}`,
+        );
+        await this.playerService.addPlayer(playersList[player.id]);
+      }
       const data = this.getPlayerPerformanceJson(player, matchInformation, playersList, matchId);
       playersPerformance.push(data);
     }
@@ -122,15 +134,15 @@ export class PlayerPerformanceService {
   }
 
   private calculateStrikeRate(runs: number, balls: number): number {
-    return balls > 0 ? runs / balls : -1;
+    return balls > 0 ? (runs / balls) * 100 : 0;
   }
 
   private calculateRunningBetweenWickets(runs: number, balls: number, fours: number, sixes: number): number {
-    return balls > 0 ? runs - (fours * 4 + sixes * 6) / balls - (fours + sixes) : -1;
+    return balls > 0 ? runs - (fours * 4 + sixes * 6) / balls - (fours + sixes) : 0;
   }
 
   private calculatePerBallAverage(balls: number, runs: number): number {
-    return balls > 0 ? runs / balls : -1;
+    return balls > 0 ? runs / balls : 0;
   }
 
   private calculateWicketTakingAbility(wickets: number, balls: number): number {
@@ -245,11 +257,38 @@ export class PlayerPerformanceService {
     data.bowl_first = playerDetails.bowlFirst;
     data.is_playing = playerDetails.isPlaying;
     data.player_id = playerDetails.id;
+    data.batting_runs = playerDetails.batting.runs;
+    data.batting_balls = playerDetails.batting.balls;
+    data.batting_fours = playerDetails.batting.fours;
+    data.batting_sixes = playerDetails.batting.sixes;
+    data.batting_is_dismissed = playerDetails.batting.isDismissed;
+    data.batting_hard_hitting_ability = playerDetails.batting.hardHittingAbility;
+    data.batting_is_finisher = playerDetails.batting.isFinisher;
+    data.batting_strike_rate = playerDetails.batting.strikeRate;
+    data.batting_running_between_wickets = playerDetails.batting.runningBetweenWickets;
+    data.bowling_balls = playerDetails.bowling.balls;
+    data.bowling_wickets = playerDetails.bowling.wickets;
+    data.bowling_runs = playerDetails.bowling.runs;
+    data.bowling_bowled = playerDetails.bowling.bowled;
+    data.bowling_lbws = playerDetails.bowling.lbws;
+    data.bowling_maidens = playerDetails.bowling.maidens;
+    data.bowling_consistency = playerDetails.bowling.perBallAverage;
+    data.bowling_wicket_taking_ability = playerDetails.bowling.wicketTakingAbility;
+    data.fielding_catches = playerDetails.fielding.catches;
+    data.fielding_runout_direct = playerDetails.fielding.runout.direct;
+    data.fielding_runout_indirect = playerDetails.fielding.runout.indirect;
+    data.fielding_stumpings = playerDetails.fielding.stumpings;
+    data.batting_position = playerDetails.battingPosition;
+    data.dream11_points = playerDetails.points;
+    data.dream11_accumulated_points = playerDetails.accumulatedPoints;
+    data.dream11_is_top_performer = playerDetails.isTopPerformer;
+    data.dream11_is_in_dt = playerDetails.isInDt;
+    data.dream11_dt_rank = playerDetails.dtRank;
   }
 
   private setPlayerAttributes(data: PlayersPerformance, playersList: Record<string, any>) {
-    data.batting_style = playersList[data.player_id].batting_style;
-    data.bowling_style = playersList[data.player_id].bowling_style;
+    data.batting_style = playersList[data.player_id]?.batting_style;
+    data.bowling_style = playersList[data.player_id]?.bowling_style;
   }
 
   private async createPlayersPerformance(playersPerformance: Record<string, any>[]): Promise<InsertResult> {

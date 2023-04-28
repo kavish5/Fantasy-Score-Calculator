@@ -8,7 +8,7 @@ import { OverByOverModule } from '../match-analyser/over-by-over';
 import { PhaseModule } from '../match-analyser/phase-wise';
 import { H2hAnalyserModule } from '../player-analyser/h2h-analyser';
 import { DreamTeamModule } from '../player-analyser/dream-team';
-import { BaseInfoModule } from '../match-analyser/base-info';
+import { MatchInformationModule } from '../match-analyser/match-information';
 import { PlayerModule } from '../player-analyser/player';
 import { VenueModule } from '../match-analyser/venue';
 import { ZipProcessorModule } from '../zip-processor';
@@ -21,7 +21,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       max: 100,
     }),
     HttpModule,
-    BaseInfoModule,
+    MatchInformationModule,
     DreamTeamModule,
     H2hAnalyserModule,
     OverByOverModule,

@@ -1,6 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { Players } from './player.entity';
 import { groupedForms } from '../../shared/providers/utility.provider';
 import _ from 'lodash';
@@ -12,6 +14,7 @@ export class PlayerService {
   constructor(
     @InjectRepository(Players)
     private playersRepository: Repository<Players>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   public async getPlayers(): Promise<any> {
@@ -21,8 +24,36 @@ export class PlayerService {
     return players;
   }
 
+  public async addPlayer(data: Record<string, any>): Promise<Players> {
+    const player = await this.insertPlayer(data);
+    await this.updateCache(player);
+    return player;
+  }
+
+  private async insertPlayer(data: Record<string, any>): Promise<Players> {
+    const player = this.playersRepository.create(data);
+    await this.playersRepository.save(player);
+    return player;
+  }
+
+  private async updateCache(newPlayer: Players): Promise<void> {
+    const cacheKey = `all_players`;
+    const players = await this.cacheManager.get<Players[]>(cacheKey);
+    if (players) {
+      players.push(newPlayer);
+      await this.cacheManager.set(cacheKey, players);
+    }
+  }
+
   private async findAll(): Promise<Players[]> {
-    // TODO need to cache the response
-    return this.playersRepository.find();
+    const cacheKey = `all_players`;
+    let players = await this.cacheManager.get<Players[]>(cacheKey);
+
+    if (!players) {
+      players = await this.playersRepository.find();
+      await this.cacheManager.set(cacheKey, players);
+    }
+
+    return players;
   }
 }

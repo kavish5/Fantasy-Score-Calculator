@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InningsDetails, OversDetails } from 'src/cricket/dto/analyze-match.dto';
+import { InningsDetails, OversDetails } from '../../cricket/dto/analyze-match.dto';
 
 @Injectable()
 export class OverByOverService {

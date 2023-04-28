@@ -21,6 +21,7 @@ import { H2hMatchDto } from './dto/h2h-details.dto';
 //   `bowler_id` varchar(50) NOT NULL,
 //   `total_runs` INT NOT NULL,
 //   `total_balls` INT NOT NULL,
+//   `total_wickets` INT NOT NULL,
 //   `batting_style` varchar(50),
 //   `bowling_style` varchar(50),
 //    PRIMARY KEY (`id`)
@@ -35,11 +36,11 @@ import { H2hMatchDto } from './dto/h2h-details.dto';
 
 //   IF @count > 0 THEN
 //     -- update existing record
-//     SELECT `total_runs`, `total_balls` INTO @total_runs, @total_balls FROM `h2h_overall` WHERE `batter_id` = NEW.batter_id AND `bowler_id` = NEW.bowler_id;
-//     UPDATE `h2h_overall` SET `total_runs` = COALESCE(@total_runs, 0) + NEW.runs, `total_balls` = COALESCE(@total_balls, 0) + NEW.balls WHERE `batter_id` = NEW.batter_id AND `bowler_id` = NEW.bowler_id;
+//     SELECT `total_runs`, `total_balls`, `total_wickets` INTO @total_runs, @total_balls, @total_wickets FROM `h2h_overall` WHERE `batter_id` = NEW.batter_id AND `bowler_id` = NEW.bowler_id;
+//     UPDATE `h2h_overall` SET `total_runs` = COALESCE(@total_runs, 0) + NEW.runs, `total_balls` = COALESCE(@total_balls, 0) + NEW.balls, `total_wickets` = COALESCE(@total_wickets, 0) + NEW.wicket WHERE `batter_id` = NEW.batter_id AND `bowler_id` = NEW.bowler_id;
 //   ELSE
 //     -- insert new record
-//     INSERT INTO `h2h_overall` (`batter_id`, `bowler_id`, `total_runs`, `total_balls`, `batting_style`, `bowling_style`) VALUES (NEW.batter_id, NEW.bowler_id, NEW.runs, NEW.balls, NEW.batting_style, NEW.bowling_style);
+//     INSERT INTO `h2h_overall` (`batter_id`, `bowler_id`, `total_runs`, `total_balls`, `total_wickets`, `batting_style`, `bowling_style`) VALUES (NEW.batter_id, NEW.bowler_id, NEW.runs, NEW.balls, NEW.wicket, NEW.batting_style, NEW.bowling_style);
 //   END IF;
 // END//
 
@@ -88,9 +89,9 @@ export class H2hMatchWise {
     const data = new H2hMatchWise();
     data.balls = h2hDetails.balls;
     data.batter_id = h2hDetails.batterId;
-    data.batting_style = players[h2hDetails.batterId].batting_style;
+    data.batting_style = players[h2hDetails.batterId]?.batting_style;
     data.bowler_id = h2hDetails.bowlerId;
-    data.bowling_style = players[h2hDetails.bowlerId].bowling_style;
+    data.bowling_style = players[h2hDetails.bowlerId]?.bowling_style;
     data.runs = h2hDetails.runs;
     data.wicket = h2hDetails.wicket;
     data.match_id = matchId;

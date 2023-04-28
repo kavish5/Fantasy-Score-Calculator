@@ -15,6 +15,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  // app.useLogger(['error', 'warn', 'log']);
   app.enableCors(config.get('corsConfigurations'));
   app.use(helmet());
   app.use(express.json({ limit: '1mb' }));
