@@ -12,6 +12,7 @@ import { PlayerService } from '../player-analyser/player';
 import { VenueService } from '../match-analyser/venue';
 import { ZipProcessorService } from '../zip-processor';
 import { MatchInformation } from '../match-analyser/match-information/match-information.entity';
+import { formatLogicUnavailableError } from './cricket.error';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -54,10 +55,23 @@ export class CricketService {
 
   public async processMatch(matchDetails: AnalyzeMatchDto): Promise<CricketResponse> {
     return this.tryWrapper(async () => {
-      const insights = await this.createCricketResponse(matchDetails);
-      await this.processCricketResponse(insights);
-      return insights;
+      const matchType = matchDetails.info?.match_type;
+      let response: any = {};
+      switch (matchType) {
+        case 'T20':
+          response = await this.processT20Match(matchDetails);
+          break;
+        default:
+          throw formatLogicUnavailableError(matchType);
+      }
+      return response;
     });
+  }
+
+  private async processT20Match(matchDetails: AnalyzeMatchDto) {
+    const insights = await this.createCricketResponse(matchDetails);
+    await this.processCricketResponse(insights);
+    return insights;
   }
 
   private async createCricketResponse(matchDetails: AnalyzeMatchDto): Promise<CricketResponse> {
