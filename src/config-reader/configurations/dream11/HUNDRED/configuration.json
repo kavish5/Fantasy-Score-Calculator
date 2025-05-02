@@ -1,8 +1,8 @@
 {
 	"batting": {
 		"run": 1,
-		"four": 1,
-		"six": 2,
+		"four": 4,
+		"six": 6,
 		"duck": -2,
 		"bonus": {
 			"runs": {

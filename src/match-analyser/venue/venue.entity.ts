@@ -30,4 +30,7 @@ export class Venues {
 
   @Column({ type: 'varchar', length: 200 })
   venue_alias_c: string;
+
+  @Column({ type: 'varchar', length: 200 })
+  venue_alias_d: string;
 }

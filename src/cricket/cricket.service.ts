@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PlayerPerformanceService } from '../player-analyser/player-performance';
 import { GeneratePointsDto } from './dto/calculate-points.dto';
 import { CricketResponse } from './interface/cricket-response.interface';
-import { AnalyzeMatchDto } from './dto/analyze-match.dto';
+import { AnalyseMatchDto } from './dto/analyse-match.dto';
 import { ScoreService } from '../fantasy-analyser/score';
 import { OverByOverService } from '../match-analyser/over-by-over';
 import { PhaseService } from '../match-analyser/phase-wise';
@@ -15,10 +15,21 @@ import { MatchInformation } from '../match-analyser/match-information/match-info
 import { formatLogicUnavailableError } from './cricket.error';
 import * as fs from 'fs';
 import * as path from 'path';
+import { MatchType } from './enum/match-type.enum';
 
 @Injectable()
 export class CricketService {
   private readonly logger = new Logger(CricketService.name, { timestamp: true });
+
+  private PP_OVER = {
+    T20: 6,
+    ODI: 15,
+  };
+
+  private DO_OVER = {
+    T20: 15,
+    ODI: 40,
+  };
 
   constructor(
     private readonly zipProcessorService: ZipProcessorService,
@@ -26,7 +37,7 @@ export class CricketService {
     private readonly scoreService: ScoreService,
     private readonly overByOverService: OverByOverService,
     private readonly phaseService: PhaseService,
-    private readonly h2hAnalyzerService: H2hAnalyserService,
+    private readonly h2hAnalyserService: H2hAnalyserService,
     private readonly matchInformationService: MatchInformationService,
     private readonly playerService: PlayerService,
     private readonly venueService: VenueService,
@@ -47,19 +58,22 @@ export class CricketService {
     });
   }
 
-  public async analyzeMatch(matchDetails: AnalyzeMatchDto): Promise<CricketResponse> {
-    return this.tryWrapper(async () => {
-      return this.createCricketResponse(matchDetails);
-    });
-  }
-
-  public async processMatch(matchDetails: AnalyzeMatchDto): Promise<CricketResponse> {
+  public async analyseMatch(matchDetails: AnalyseMatchDto): Promise<CricketResponse> {
     return this.tryWrapper(async () => {
       const matchType = matchDetails.info?.match_type;
       let response: any = {};
       switch (matchType) {
         case 'T20':
-          response = await this.processT20Match(matchDetails);
+          response = await this.createCricketResponse(matchDetails, this.PP_OVER.T20, this.PP_OVER.T20);
+          break;
+        case 'IT20':
+          response = await this.createCricketResponse(matchDetails, this.PP_OVER.T20, this.PP_OVER.T20);
+          break;
+        case 'ODI':
+          response = await this.createCricketResponse(matchDetails, this.PP_OVER.ODI, this.DO_OVER.ODI);
+          break;
+        case 'ODM':
+          response = await this.createCricketResponse(matchDetails, this.PP_OVER.ODI, this.DO_OVER.ODI);
           break;
         default:
           throw formatLogicUnavailableError(matchType);
@@ -68,34 +82,76 @@ export class CricketService {
     });
   }
 
-  private async processT20Match(matchDetails: AnalyzeMatchDto) {
-    const insights = await this.createCricketResponse(matchDetails);
-    await this.processCricketResponse(insights);
+  public async processMatch(matchDetails: AnalyseMatchDto): Promise<CricketResponse> {
+    return this.tryWrapper(async () => {
+      const matchType = matchDetails.info?.match_type;
+      let response: any = {};
+      switch (matchType) {
+        case 'T20':
+          response = await this.processT20Match(matchDetails);
+          break;
+        case 'IT20':
+          response = await this.processT20Match(matchDetails);
+          break;
+        case 'ODM':
+          response = await this.processODIMatch(matchDetails);
+          break;
+        case 'ODI':
+          response = await this.processODIMatch(matchDetails);
+          break;
+        default:
+          throw formatLogicUnavailableError(matchType);
+      }
+      return response;
+    });
+  }
+
+  private async processT20Match(matchDetails: AnalyseMatchDto) {
+    const insights = await this.createCricketResponse(matchDetails, this.PP_OVER.T20, this.DO_OVER.T20);
+    await this.processCricketResponse(insights, 'T20');
     return insights;
   }
 
-  private async createCricketResponse(matchDetails: AnalyzeMatchDto): Promise<CricketResponse> {
+  private async processODIMatch(matchDetails: AnalyseMatchDto) {
+    const insights = await this.createCricketResponse(matchDetails, this.PP_OVER.ODI, this.DO_OVER.ODI);
+    await this.processCricketResponse(insights, 'ODI');
+    return insights;
+  }
+
+  private async createCricketResponse(
+    matchDetails: AnalyseMatchDto,
+    powerplayOversEnds: number,
+    deathOversStart: number,
+  ): Promise<CricketResponse> {
     const matchId = matchDetails.meta.match_number;
+    let matchType: any = matchDetails.info.match_type;
+    if (matchType === 'ODM') {
+      matchType = MatchType.ODM;
+    }
+    if (matchType === 'IT20') {
+      matchType = MatchType.IT20;
+    }
     const players = this.playerPerformanceService.calculate(matchDetails);
-    const fantasyScores = this.scoreService.calculate(matchId, players);
+    const fantasyScores = this.scoreService.calculate(matchId, players, matchType);
     matchDetails.innings = this.overByOverService.calculate(matchDetails.innings);
-    matchDetails = this.phaseService.calculate(matchDetails);
+    matchDetails = this.phaseService.calculate(matchDetails, powerplayOversEnds, deathOversStart);
     matchDetails = this.matchInformationService.calculate(matchDetails);
-    const h2hDetails = this.h2hAnalyzerService.calculate(matchDetails);
+    const h2hDetails = this.h2hAnalyserService.calculate(matchDetails);
     return { ...matchDetails, ...fantasyScores, players, h2hDetails };
   }
 
-  private async processCricketResponse(insights: CricketResponse) {
+  private async processCricketResponse(insights: CricketResponse, matchType: string) {
     const matchNumber = insights.meta.match_number;
     const matchDate = insights.info.dates[0];
     const players = await this.playerService.getPlayers();
-    const matchVenue = insights.info.venue;
+    const matchVenue = insights.info.venue.trim();
     const venueDetails = await this.venueService.getMatchingVenue(matchVenue);
     insights.info.venue = venueDetails.name;
     insights.info.city = venueDetails.city;
+    insights.info.venue_id = venueDetails.id;
 
     const matchInformation = await this.storeMatchInformation(insights);
-    await this.h2hAnalyzerService.processMatchWiseH2h(insights.h2hDetails, players, matchNumber, matchDate);
+    await this.h2hAnalyserService.processMatchWiseH2h(insights.h2hDetails, players, matchNumber, matchDate, matchType);
     await this.playerPerformanceService.processMatchWisePlayerPerformance(
       insights.info,
       insights.players,
@@ -128,11 +184,11 @@ export class CricketService {
           const numericMatchNumber = matchNumber.replace(/\D/g, ''); // Remove all non-numeric characters
           data.meta.match_number = numericMatchNumber;
           await this.processMatch(data);
-          response[file.split('.json')[0]] = true;
+          response[file.split('.json')[0]] = { status: true };
         }
       } catch (error) {
         this.logger.error(`Error occured in processing ${filePath} ${JSON.stringify(error)} ${error}`);
-        response[file.split('.json')[0]] = false;
+        response[file.split('.json')[0]] = { status: false, errorDetails: error, error: error.message };
       }
       fs.unlinkSync(filePath);
     }

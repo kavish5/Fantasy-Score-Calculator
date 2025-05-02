@@ -1,7 +1,7 @@
 import { Body, Controller, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CricketService } from './cricket.service';
 import { GeneratePointsDto } from './dto/calculate-points.dto';
-import { AnalyzeMatchDto } from './dto/analyze-match.dto';
+import { AnalyseMatchDto } from './dto/analyse-match.dto';
 import { CricketResponse } from './interface/cricket-response.interface';
 
 @Controller('cricket')
@@ -22,16 +22,16 @@ export class CricketController {
     return response;
   }
 
-  @Post('analyse/t20')
+  @Post('analyse')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async analyzeMatch(@Body() data: AnalyzeMatchDto): Promise<CricketResponse> {
-    const response: CricketResponse = await this.cricketService.analyzeMatch(data);
+  async AnalyseMatch(@Body() data: AnalyseMatchDto): Promise<CricketResponse> {
+    const response: CricketResponse = await this.cricketService.analyseMatch(data);
     return response;
   }
 
-  @Post('process/t20')
+  @Post('process')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async processMatch(@Body() data: AnalyzeMatchDto): Promise<CricketResponse> {
+  async processMatch(@Body() data: AnalyseMatchDto): Promise<CricketResponse> {
     const response: CricketResponse = await this.cricketService.processMatch(data);
     return response;
   }

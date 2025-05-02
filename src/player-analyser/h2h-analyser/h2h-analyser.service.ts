@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InsertResult, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AnalyzeMatchDto } from '../../cricket/dto/analyze-match.dto';
+import { AnalyseMatchDto } from '../../cricket/dto/analyse-match.dto';
 import { H2hMatchWise } from './h2h-match-wise.entity';
 import { H2hMatchDto } from './dto/h2h-details.dto';
 
@@ -14,7 +14,7 @@ export class H2hAnalyserService {
     private h2hMatchWiseRepository: Repository<H2hMatchWise>,
   ) {}
 
-  public calculate(matchDetails: AnalyzeMatchDto): any {
+  public calculate(matchDetails: AnalyseMatchDto): any {
     this.logger.debug(`Calculating head to head performance for match`);
     const { innings, info } = matchDetails;
     let h2hDetails = this.generateH2hPlayerJson(info.players, info.registry);
@@ -27,10 +27,11 @@ export class H2hAnalyserService {
     players: Record<string, any>,
     matchId: number,
     matchDate: string,
+    matchType: string,
   ): Promise<any> {
     const h2h: H2hMatchWise[] = [];
     for (const item of h2hDetails) {
-      const data = H2hMatchWise.createInstance(item, players, matchId, matchDate);
+      const data = H2hMatchWise.createInstance(item, players, matchId, matchDate, matchType);
       h2h.push(data);
     }
     const response = await this.createH2hMatchWiseRecords(h2h);

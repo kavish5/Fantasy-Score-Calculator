@@ -228,7 +228,7 @@ export class InningsDetails {
   powerplays: PowerplayDetails[];
 }
 
-export class AnalyzeMatchDto {
+export class AnalyseMatchDto {
   @IsNotEmpty()
   @IsObject()
   meta: MetaDetails;

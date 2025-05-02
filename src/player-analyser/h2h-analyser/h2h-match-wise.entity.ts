@@ -32,15 +32,15 @@ import { H2hMatchDto } from './dto/h2h-details.dto';
 // CREATE TRIGGER `update_h2h_overall` AFTER INSERT ON `h2h_match_wise` FOR EACH ROW
 // BEGIN
 //   -- check if batter and bowler exist in h2h_overall
-//   SELECT COUNT(*) INTO @count FROM `h2h_overall` WHERE `batter_id` = NEW.batter_id AND `bowler_id` = NEW.bowler_id;
+//   SELECT COUNT(*) INTO @count FROM `h2h_overall` WHERE `batter_id` = NEW.batter_id AND `bowler_id` = NEW.bowler_id AND `match_type` = NEW.match_type;
 
 //   IF @count > 0 THEN
 //     -- update existing record
-//     SELECT `total_runs`, `total_balls`, `total_wickets` INTO @total_runs, @total_balls, @total_wickets FROM `h2h_overall` WHERE `batter_id` = NEW.batter_id AND `bowler_id` = NEW.bowler_id;
-//     UPDATE `h2h_overall` SET `total_runs` = COALESCE(@total_runs, 0) + NEW.runs, `total_balls` = COALESCE(@total_balls, 0) + NEW.balls, `total_wickets` = COALESCE(@total_wickets, 0) + NEW.wicket WHERE `batter_id` = NEW.batter_id AND `bowler_id` = NEW.bowler_id;
+//     SELECT `total_runs`, `total_balls`, `total_wickets` INTO @total_runs, @total_balls, @total_wickets FROM `h2h_overall` WHERE `batter_id` = NEW.batter_id AND `bowler_id` = NEW.bowler_id AND `match_type` = NEW.match_type;
+//     UPDATE `h2h_overall` SET `total_runs` = COALESCE(@total_runs, 0) + NEW.runs, `total_balls` = COALESCE(@total_balls, 0) + NEW.balls, `total_wickets` = COALESCE(@total_wickets, 0) + NEW.wicket WHERE `batter_id` = NEW.batter_id AND `bowler_id` = NEW.bowler_id AND `match_type` = NEW.match_type;
 //   ELSE
 //     -- insert new record
-//     INSERT INTO `h2h_overall` (`batter_id`, `bowler_id`, `total_runs`, `total_balls`, `total_wickets`, `batting_style`, `bowling_style`) VALUES (NEW.batter_id, NEW.bowler_id, NEW.runs, NEW.balls, NEW.wicket, NEW.batting_style, NEW.bowling_style);
+//     INSERT INTO `h2h_overall` (`batter_id`, `bowler_id`, `total_runs`, `total_balls`, `total_wickets`, `batting_style`, `bowling_style`, `match_type`) VALUES (NEW.batter_id, NEW.bowler_id, NEW.runs, NEW.balls, NEW.wicket, NEW.batting_style, NEW.bowling_style, NEW.match_type);
 //   END IF;
 // END//
 
@@ -71,6 +71,9 @@ export class H2hMatchWise {
   @Column({ type: 'varchar', length: 50 })
   bowling_style: string;
 
+  @Column({ type: 'varchar', length: 10 })
+  match_type: string;
+
   @Column({ type: 'int' })
   runs: number;
 
@@ -85,6 +88,7 @@ export class H2hMatchWise {
     players: Record<string, any>,
     matchId: number,
     matchDate: string,
+    matchType: string,
   ): H2hMatchWise {
     const data = new H2hMatchWise();
     data.balls = h2hDetails.balls;
@@ -94,6 +98,7 @@ export class H2hMatchWise {
     data.bowling_style = players[h2hDetails.bowlerId]?.bowling_style;
     data.runs = h2hDetails.runs;
     data.wicket = h2hDetails.wicket;
+    data.match_type = matchType;
     data.match_id = matchId;
     data.match_on = new Date(matchDate);
     return data;

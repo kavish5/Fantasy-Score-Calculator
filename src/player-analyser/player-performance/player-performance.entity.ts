@@ -93,7 +93,7 @@ export class PlayersPerformance {
   toss_decision: string;
 
   @Column({ type: 'datetime' })
-  created_at: Date;
+  match_at: Date;
 
   @Column({ type: 'int' })
   match_date: number;
@@ -109,6 +109,15 @@ export class PlayersPerformance {
 
   @Column({ type: 'varchar', length: 50 })
   second_team: string;
+
+  @Column({ type: 'varchar', length: 50 })
+  playing_for: string;
+
+  @Column({ type: 'varchar', length: 50 })
+  playing_against: string;
+
+  @Column({ type: 'varchar', length: 50 })
+  winner: string;
 
   @Column({ type: 'int' })
   batting_runs: number;

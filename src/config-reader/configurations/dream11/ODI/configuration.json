@@ -1,16 +1,28 @@
 {
 	"batting": {
 		"run": 1,
-		"four": 1,
-		"six": 2,
+		"four": 4,
+		"six": 6,
 		"duck": -3,
 		"bonus": {
 			"runs": {
 				"slots": [{
+					"above": 150,
+					"points": 24
+				}, {
+					"above": 125,
+					"points": 20
+				}, {
 					"above": 100,
-					"points": 8
+					"points": 16
+				}, {
+					"above": 75,
+					"points": 12
 				}, {
 					"above": 50,
+					"points": 8
+				}, {
+					"above": 25,
 					"points": 4
 				}]
 			},
@@ -43,14 +55,22 @@
 		}
 	},
 	"bowling": {
-		"wicket": 25,
+		"wicket": 30,
 		"maiden": 4,
 		"bowled": 8,
 		"lbw": 8,
 		"bonus": {
+			"dots": {
+				"every": 3,
+				"points": 1
+			},
 			"wickets": {
 				"slots": [{
+					"above": 6,
+					"points": 12
+				}, {
 					"above": 5,
+					"below": 6,
 					"points": 8
 				}, {
 					"above": 4,

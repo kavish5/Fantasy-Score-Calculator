@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { AnalyzeMatchDto, InfoDetails } from '../../cricket/dto/analyze-match.dto';
+import { AnalyseMatchDto, InfoDetails } from '../../cricket/dto/analyse-match.dto';
 import { PlayersPerformance } from './player-performance.entity';
 import { InsertResult, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,7 +15,7 @@ export class PlayerPerformanceService {
     @Inject(PlayerService) private readonly playerService: PlayerService,
   ) {}
 
-  public calculate(matchDetails: AnalyzeMatchDto): any {
+  public calculate(matchDetails: AnalyseMatchDto): any {
     this.logger.debug(`Calculating players performance for match`);
     const { innings, info } = matchDetails;
     let playerJson = this.generatePlayerJson(info.players, info.registry, info.toss);
@@ -225,7 +225,7 @@ export class PlayerPerformanceService {
   ) {
     const data = new PlayersPerformance();
     this.setMatchInformation(data, matchInformation, matchId);
-    this.setPlayerDetails(data, playerDetails);
+    this.setPlayerDetails(data, playerDetails, matchInformation);
     this.setPlayerAttributes(data, playersList);
     return data;
   }
@@ -239,18 +239,30 @@ export class PlayerPerformanceService {
     data.season = matchInformation.season;
     data.team_type = matchInformation.team_type;
     data.toss_decision = matchInformation.toss.decision;
-    data.created_at = new Date(matchInformation.dates[0]);
-    data.match_day = data.created_at.getDay();
-    data.match_date = data.created_at.getDate();
-    data.match_month = data.created_at.getMonth();
+    data.match_at = new Date(matchInformation.dates[0]);
+    data.match_day = data.match_at.getDay();
+    data.match_date = data.match_at.getDate();
+    data.match_month = data.match_at.getMonth() + 1;
     data.first_team = matchInformation.teams[0];
     data.second_team = matchInformation.teams[1];
     data.event_name = matchInformation.event?.name;
     data.event_stage = matchInformation.event?.stage;
+    data.winner = matchInformation.outcome.winner;
     data.match_id = matchId;
   }
 
-  private setPlayerDetails(data: PlayersPerformance, playerDetails: Record<string, any>) {
+  private setPlayerDetails(
+    data: PlayersPerformance,
+    playerDetails: Record<string, any>,
+    matchInformation: InfoDetails,
+  ) {
+    for (const teamName in matchInformation.players) {
+      if (matchInformation.players[teamName].includes(playerDetails.name)) {
+        data.playing_for = teamName;
+      } else {
+        data.playing_against = teamName;
+      }
+    }
     data.player_name = playerDetails.name;
     data.batting_position = playerDetails.battingPosition;
     data.bat_first = playerDetails.batFirst;

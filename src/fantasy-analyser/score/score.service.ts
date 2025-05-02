@@ -17,9 +17,9 @@ export class ScoreService {
     @Inject(DreamTeamService) private readonly dreamTeamService: DreamTeamService,
   ) {}
 
-  public calculate(matchId: number, playerPerformance: PlayerDetails[]): any {
+  public calculate(matchId: number, playerPerformance: PlayerDetails[], type: MatchType): any {
     this.logger.debug(`Calculating scores for ${JSON.stringify(playerPerformance)}`);
-    let fantasyScores = this.getFantasyScores(matchId, playerPerformance);
+    let fantasyScores = this.getFantasyScores(matchId, playerPerformance, type);
     fantasyScores = this.dreamTeamService.calculate(fantasyScores);
     return { fantasyScores };
   }
@@ -33,14 +33,14 @@ export class ScoreService {
     }
   }
 
-  private getFantasyScores(matchId: number, players: PlayerDetails[]) {
+  private getFantasyScores(matchId: number, players: PlayerDetails[], type: MatchType) {
     const fantasyScores = [];
     const strategy = StrategyType.dream11;
     const fantasyData: GeneratePointsDto = {
       matchId,
       players,
       strategy,
-      type: MatchType.T20,
+      type,
     };
     const fantasyScore = this.getCalculatedPoints(fantasyData);
     fantasyScores.push({ strategy, fantasyScore });

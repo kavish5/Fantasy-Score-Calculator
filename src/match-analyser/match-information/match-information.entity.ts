@@ -56,6 +56,9 @@ export class MatchInformation {
   venue: string;
 
   @Column({ type: 'varchar', length: 100 })
+  venue_id: string;
+
+  @Column({ type: 'varchar', length: 100 })
   event_name: string;
 
   @Column({ type: 'varchar', length: 100 })
@@ -91,17 +94,35 @@ export class MatchInformation {
   @Column({ type: 'varchar', length: 100 })
   second_team: string;
 
+  @Column({ type: 'varchar', length: 100 })
+  winner: string;
+
+  @Column({ type: 'varchar', length: 100 })
+  win_type: string;
+
+  @Column({ type: 'int' })
+  win_by: number;
+
+  @Column({ type: 'float' })
+  first_powerplay_average: number;
+
   @Column({ type: 'int' })
   first_powerplay_runs: number;
 
   @Column({ type: 'int' })
   first_powerplay_wickets: number;
 
+  @Column({ type: 'float' })
+  first_middleovers_average: number;
+
   @Column({ type: 'int' })
   first_middleovers_runs: number;
 
   @Column({ type: 'int' })
   first_middleovers_wickets: number;
+
+  @Column({ type: 'float' })
+  first_deathovers_average: number;
 
   @Column({ type: 'int' })
   first_deathovers_runs: number;
@@ -115,17 +136,26 @@ export class MatchInformation {
   @Column({ type: 'int' })
   first_total_wickets: number;
 
+  @Column({ type: 'float' })
+  second_powerplay_average: number;
+
   @Column({ type: 'int' })
   second_powerplay_runs: number;
 
   @Column({ type: 'int' })
   second_powerplay_wickets: number;
 
+  @Column({ type: 'float' })
+  second_middleovers_average: number;
+
   @Column({ type: 'int' })
   second_middleovers_runs: number;
 
   @Column({ type: 'int' })
   second_middleovers_wickets: number;
+
+  @Column({ type: 'float' })
+  second_deathovers_average: number;
 
   @Column({ type: 'int' })
   second_deathovers_runs: number;

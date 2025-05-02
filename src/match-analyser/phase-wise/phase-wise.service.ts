@@ -1,21 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-const PP_OVER_T20 = 6;
-const DO_OVER_T20 = 15;
-
 @Injectable()
 export class PhaseService {
   private readonly logger = new Logger(PhaseService.name, { timestamp: true });
 
   constructor() {}
 
-  public calculate(matchDetails: Record<string, any>): any {
+  public calculate(matchDetails: Record<string, any>, powerplayOversEnds: number, deathOversStart: number): any {
     this.logger.debug(`Calculating phase wise analysis for match`);
     const { innings } = matchDetails;
     const firstInning = innings[0].overs;
     const secondInning = innings[1].overs;
-    innings[0] = this.calculateInningPhases(firstInning);
-    innings[1] = this.calculateInningPhases(secondInning);
+    innings[0] = this.calculateInningPhases(firstInning, powerplayOversEnds, deathOversStart);
+    innings[1] = this.calculateInningPhases(secondInning, powerplayOversEnds, deathOversStart);
 
     return matchDetails;
   }
@@ -24,10 +21,10 @@ export class PhaseService {
     return overs.filter((over: Record<string, any>) => over.over >= startOver && over.over < endOver);
   }
 
-  private calculateInningPhases(overs: any[]) {
-    const powerPlayOvers = this.filterPhaseOvers(overs, 0, PP_OVER_T20);
-    const middleOvers = this.filterPhaseOvers(overs, PP_OVER_T20, DO_OVER_T20);
-    const deathOvers = this.filterPhaseOvers(overs, DO_OVER_T20, Infinity);
+  private calculateInningPhases(overs: any[], powerplayOversEnds: number, deathOversStart: number) {
+    const powerPlayOvers = this.filterPhaseOvers(overs, 0, powerplayOversEnds);
+    const middleOvers = this.filterPhaseOvers(overs, powerplayOversEnds, deathOversStart);
+    const deathOvers = this.filterPhaseOvers(overs, deathOversStart, Infinity);
 
     return {
       overs,

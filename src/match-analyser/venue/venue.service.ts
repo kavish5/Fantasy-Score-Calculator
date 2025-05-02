@@ -44,7 +44,7 @@ export class VenueService {
         name: venue.venue,
       };
       result[venue.venue] = data;
-      for (const alias of [venue.venue_alias_a, venue.venue_alias_b, venue.venue_alias_c]) {
+      for (const alias of [venue.venue_alias_a, venue.venue_alias_b, venue.venue_alias_c, venue.venue_alias_d]) {
         if (_.size(alias) > 0) {
           result[alias] = data;
         }
