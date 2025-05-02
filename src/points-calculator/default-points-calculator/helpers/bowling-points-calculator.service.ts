@@ -49,6 +49,11 @@ export class BowlingPointsCalculatorService extends BasePointsCalculatorService 
         points += slot.points;
       }
     }
+    if (pointsConfigurations.bonus?.dots) {
+      const dotPoints =
+        Math.floor(bowling.dots / pointsConfigurations.bonus?.dots?.every) * pointsConfigurations.bonus?.dots?.points;
+      points += dotPoints;
+    }
     if (pointsConfigurations.bonus?.wickets) {
       const slot = this.getSlot(pointsConfigurations.bonus?.wickets?.slots, bowling.wickets);
       if (slot) {

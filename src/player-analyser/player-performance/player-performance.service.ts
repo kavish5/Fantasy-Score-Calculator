@@ -88,6 +88,7 @@ export class PlayerPerformanceService {
             lbws: 0,
             bowled: 0,
             maidens: 0,
+            dots: 0,
           },
           fielding: {
             catches: 0,
@@ -167,6 +168,9 @@ export class PlayerPerformanceService {
         }
         bowling.balls += 1;
         bowling.runs += delivery.runs.total;
+        if (delivery.runs.total === 0) {
+          bowling.dots += 1;
+        }
         if (wickets) {
           bowling.wickets += wickets.length;
           const wicket = wickets[0];

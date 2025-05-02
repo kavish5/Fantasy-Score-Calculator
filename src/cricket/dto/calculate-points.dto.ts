@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsEmpty, IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { MatchType } from '../enum/match-type.enum';
 import { MultiplierType } from '../enum/multiplier-type.enum';
 import { RoleType } from '../enum/role-type.enum';
@@ -64,6 +64,10 @@ export class BowlingDetails {
   @IsNotEmpty()
   @IsNumber()
   maidens: number = 0;
+
+  @IsNotEmpty()
+  @IsEmpty()
+  dots: number = 0;
 }
 
 export class FieldingDetails {
