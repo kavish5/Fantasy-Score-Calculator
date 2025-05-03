@@ -154,21 +154,24 @@ export class PlayerPerformanceService {
     for (const over of inningsDetail) {
       const { deliveries } = over;
       for (const delivery of deliveries) {
-        const { batter, bowler, wickets } = delivery;
+        const { batter, bowler, wickets, runs, extras } = delivery;
         const { batting } = playerJson[batter];
         const { bowling, fielding } = playerJson[bowler];
-        // TODO Does not have details on what kind of extras were there
-        batting.balls += 1;
-        batting.runs += delivery.runs.batter;
-        if (delivery.runs.batter === 4) {
+        if (!extras || (extras && !extras.wides)) {
+          batting.balls += 1;
+        }
+        batting.runs += runs.batter;
+        if (runs.batter === 4) {
           batting.fours += 1;
         }
-        if (delivery.runs.batter === 6) {
+        if (runs.batter === 6) {
           batting.sixes += 1;
         }
-        bowling.balls += 1;
-        bowling.runs += delivery.runs.total;
-        if (delivery.runs.total === 0) {
+        if (!extras || (!extras.wides && !extras.noballs)) {
+          bowling.balls += 1;
+        }
+        bowling.runs += runs.total;
+        if (runs.total - runs.extras === 0) {
           bowling.dots += 1;
         }
         if (wickets) {
